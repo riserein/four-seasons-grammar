@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>四季语法</title>
+<style>
+:root {
+  --bg: #f8fafc; --bg-card: #fff; --text: #1e293b; --text-secondary: #64748b;
+  --primary: #6366f1; --primary-dark: #4f46e5; --primary-light: #eef2ff;
+  --accent: #f59e0b; --success: #22c55e; --danger: #ef4444;
+  --border: #e2e8f0; --radius: 12px; --shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+.container { max-width: 800px; margin: 0 auto; padding: 16px; }
+.card { background: var(--bg-card); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; box-shadow: var(--shadow); }
+.navbar { background: var(--bg-card); padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow); position: sticky; top: 0; z-index: 100; }
+.navbar .logo { font-size: 20px; font-weight: 700; color: var(--primary); cursor: pointer; }
+.navbar .nav-links { display: flex; gap: 4px; flex-wrap: wrap; }
+.navbar .nav-links a { padding: 8px 14px; border-radius: 8px; text-decoration: none; color: var(--text-secondary); font-size: 14px; cursor: pointer; transition: all 0.2s; }
+.navbar .nav-links a:hover, .navbar .nav-links a.active { background: var(--primary-light); color: var(--primary-dark); }
+.navbar .user-info { display: flex; align-items: center; gap: 12px; font-size: 14px; }
+.navbar .points { color: var(--accent); font-weight: 700; }
+.page { display: none; } .page.active { display: block; }
+.auth-container { max-width: 420px; margin: 80px auto; padding: 20px; }
+.auth-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+.auth-tab { flex: 1; padding: 10px; text-align: center; border-radius: 8px; cursor: pointer; background: var(--bg); border: 1px solid var(--border); font-size: 14px; }
+.auth-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.form-group { margin-bottom: 14px; }
+.form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--text-secondary); }
+.form-group input, .form-group select { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; background: var(--bg); color: var(--text); }
+.form-row { display: flex; gap: 12px; } .form-row > * { flex: 1; }
+.btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+.btn-primary { background: var(--primary); color: #fff; } .btn-primary:hover { background: var(--primary-dark); }
+.btn-outline { background: var(--bg); border: 1px solid var(--border); color: var(--text); }
+.btn-outline:hover { background: var(--primary-light); }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-block { width: 100%; justify-content: center; }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-lg { padding: 14px 24px; font-size: 16px; }
+.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+.dash-card { background: var(--bg-card); border-radius: var(--radius); padding: 24px 16px; text-align: center; cursor: pointer; box-shadow: var(--shadow); transition: all 0.2s; }
+.dash-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+.dash-card .icon { font-size: 36px; margin-bottom: 8px; }
+.dash-card .title { font-weight: 600; font-size: 14px; }
+.progress-bar { height: 8px; background: var(--bg); border-radius: 4px; margin-bottom: 16px; overflow: hidden; }
+.progress-bar .fill { height: 100%; background: var(--primary); border-radius: 4px; transition: width 0.3s; }
+.game-options { display: flex; flex-direction: column; gap: 10px; }
+.game-option { padding: 14px 16px; border: 2px solid var(--border); border-radius: 10px; background: var(--bg-card); cursor: pointer; font-size: 15px; text-align: left; transition: all 0.2s; }
+.game-option:hover { border-color: var(--primary); background: var(--primary-light); }
+.game-option.correct { border-color: var(--success); background: #dcfce7; }
+.game-option.wrong { border-color: var(--danger); background: #fee2e2; }
+.game-question { background: var(--bg); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+.game-question .q-num { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; }
+.game-question .sentence { font-size: 20px; font-weight: 600; line-height: 1.6; }
+.feedback-box { padding: 14px; border-radius: 8px; margin-bottom: 12px; font-weight: 600; }
+.feedback-box.correct { background: #dcfce7; color: #166534; }
+.feedback-box.wrong { background: #fee2e2; color: #991b1b; }
+.tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.tab-btn { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); cursor: pointer; font-size: 13px; transition: all 0.2s; }
+.tab-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.tower-level { padding: 16px 20px; border-radius: 10px; margin: 8px 0; border: 2px solid var(--border); cursor: pointer; transition: all 0.2s; background: var(--bg-card); position: relative; }
+.tower-level:hover { border-color: var(--primary); }
+.tower-level.completed { border-color: var(--success); background: #f0fdf4; }
+.tower-level.locked { opacity: 0.4; cursor: not-allowed; }
+.tower-level.current { border-color: var(--accent); border-width: 3px; animation: pulse 2s infinite; }
+.tower-connector { width: 3px; height: 20px; background: var(--border); margin: 0 auto; }
+@keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(245,158,11,0.4); } 50% { box-shadow: 0 0 0 8px rgba(245,158,11,0); } }
+.level-num { font-weight: 700; font-size: 18px; color: var(--primary); }
+.level-label { font-size: 15px; font-weight: 600; margin: 4px 0; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13px; }
+th { font-weight: 600; color: var(--text-secondary); font-size: 12px; }
+.shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.shop-item { background: var(--bg-card); border-radius: 10px; padding: 16px; text-align: center; cursor: pointer; box-shadow: var(--shadow); transition: all 0.2s; }
+.shop-item:hover { transform: translateY(-2px); }
+.shop-item .emoji { font-size: 32px; margin-bottom: 8px; }
+.shop-item .item-name { font-size: 13px; font-weight: 600; }
+.shop-item .item-price { font-size: 12px; color: var(--accent); margin-top: 4px; }
+.score-display { text-align: center; padding: 40px 20px; }
+.big-score { font-size: 56px; font-weight: 800; color: var(--primary); }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.badge-green { background: #dcfce7; color: #166534; }
+.badge-blue { background: #dbeafe; color: #1e40af; }
+.leaderboard-item { display: flex; align-items: center; padding: 12px 16px; gap: 12px; }
+.leaderboard-item .rank { width: 36px; font-weight: 700; font-size: 16px; text-align: center; }
+.leaderboard-item .name { flex: 1; font-weight: 500; }
+.leaderboard-item .pts { font-weight: 700; color: var(--accent); }
+.rank.gold { color: #f59e0b; } .rank.silver { color: #94a3b8; } .rank.bronze { color: #d97706; }
+.wrong-item { background: var(--bg-card); border-radius: 10px; padding: 16px; margin-bottom: 10px; box-shadow: var(--shadow); }
+.wrong-item .meta { display: flex; gap: 16px; margin-top: 8px; font-size: 13px; flex-wrap: wrap; }
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 200; justify-content: center; align-items: center; }
+.modal-overlay.show { display: flex; }
+.modal { background: var(--bg-card); border-radius: var(--radius); padding: 24px; max-width: 480px; width: 90%; max-height: 80vh; overflow-y: auto; }
+.modal .close { float: right; font-size: 20px; cursor: pointer; color: var(--text-secondary); }
+textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; min-height: 120px; background: var(--bg); color: var(--text); }
+.theme-autumn { --bg: #fff7ed; --bg-card: #fff; --primary: #ea580c; --primary-dark: #c2410c; --primary-light: #fff7ed; --accent: #dc2626; }
+.theme-ocean { --bg: #f0f9ff; --bg-card: #fff; --primary: #0284c7; --primary-dark: #0369a1; --primary-light: #e0f2fe; --accent: #0d9488; }
+.theme-forest { --bg: #f0fdf4; --bg-card: #fff; --primary: #16a34a; --primary-dark: #15803d; --primary-light: #dcfce7; --accent: #84cc16; }
+.theme-sunset { --bg: #fdf4ff; --bg-card: #fff; --primary: #d946ef; --primary-dark: #a21caf; --primary-light: #fae8ff; --accent: #f43f5e; }
+.theme-midnight { --bg: #1e1b4b; --bg-card: #312e81; --text: #e0e7ff; --text-secondary: #a5b4fc; --primary: #818cf8; --primary-dark: #6366f1; --primary-light: #3730a3; --accent: #fbbf24; --border: #4338ca; --shadow: none; }
+.theme-minimal { --bg: #fafafa; --bg-card: #fff; --primary: #27272a; --primary-dark: #18181b; --primary-light: #f4f4f5; --accent: #3b82f6; }
+.avatar-container { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.avatar-body { position: relative; width: 80px; height: 180px; }
+.avatar-part { position: absolute; font-size: 40px; text-align: center; left: 50%; transform: translateX(-50%); }
+.avatar-hat { top: 0; }
+.avatar-top { top: 55px; }
+.avatar-bottom { top: 110px; }
+.avatar-shoes { top: 155px; }
+.avatar-accessory { top: 70px; left: 60%; }
+@media(max-width:600px){.dashboard-grid{grid-template-columns:repeat(2,1fr)}.shop-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<nav class="navbar" id="navbar" style="display:none">
+  <div class="logo" onclick="navigate('dashboard')">🍂 四季语法</div>
+  <div class="nav-links">
+    <a onclick="navigate('dashboard')" data-page="dashboard">首页</a>
+    <a onclick="navigate('practice')" data-page="practice">练习</a>
+    <a onclick="navigate('tower')" data-page="tower">爬塔</a>
+    <a onclick="navigate('wrongbook')" data-page="wrongbook">错题本</a>
+    <a onclick="navigate('banks')" data-page="banks">题库</a>
+    <a onclick="navigate('shared')" data-page="shared">共享</a>
+    <a onclick="navigate('shop')" data-page="shop">商城</a>
+    <a onclick="navigate('leaderboard')" data-page="leaderboard">排行</a>
+    <a onclick="navigate('achievements')" data-page="achievements">成就</a>
+    <a onclick="navigate('battle')" data-page="battle">对战</a>
+    <a onclick="navigate('classes')" data-page="classes">班级</a>
+    <a id="nav-teacher" onclick="navigate('teacher')" data-page="teacher" style="display:none">管理</a>
+  </div>
+  <div class="user-info"><span class="points" id="nav-points">⭐ 0</span><span id="nav-user"></span><a onclick="doLogout()" style="cursor:pointer;color:var(--text-secondary);font-size:12px">退出</a></div>
+</nav>
+
+<div id="pages">
+<!-- Auth -->
+<div class="page active" id="page-auth">
+<div class="auth-container">
+  <h2 style="text-align:center;margin-bottom:20px">🍂 四季语法</h2>
+  <div class="auth-tabs"><button class="auth-tab active" onclick="switchAuthTab('login')">登录</button><button class="auth-tab" onclick="switchAuthTab('register')">注册</button></div>
+  <div id="auth-error" style="display:none;padding:10px;border-radius:8px;margin-bottom:12px;font-size:13px;text-align:center"></div>
+  <div id="login-form">
+    <div class="form-group"><label>用户名</label><input id="login-username"></div>
+    <div class="form-group"><label>密码</label><input id="login-password" type="password"></div>
+    <div class="form-group"><label>身份</label><select id="login-role"><option value="student">学生</option><option value="teacher">教师</option></select></div>
+    <button class="btn btn-primary btn-block btn-lg" onclick="doLogin()">登录</button>
+  </div>
+  <div id="register-form" style="display:none">
+    <div class="form-group"><label>用户名</label><input id="reg-username"></div>
+    <div class="form-group"><label>密码</label><input id="reg-password" type="password"></div>
+    <div class="form-group"><label>身份</label><select id="reg-role"><option value="student">学生</option><option value="teacher">教师</option></select></div>
+    <button class="btn btn-primary btn-block btn-lg" onclick="doRegister()">注册</button>
+  </div>
+</div>
+</div>
+<!-- Dashboard -->
+<div class="page" id="page-dashboard"><div class="container">
+  <div class="card" style="text-align:center;padding:30px"><h2>欢迎，<span id="dash-name"></span>！</h2>
+    <p style="color:var(--text-secondary);margin-top:8px">准备好了吗？来挑战语法题吧！</p>
+    <div style="margin-top:16px;font-size:24px;color:var(--accent);font-weight:700">⭐ <span id="dash-points">0</span> 积分</div>
+    <div style="margin-top:12px"><span id="checkin-status" style="display:none;margin-right:12px;color:var(--success);font-weight:600">✅ 已签到 · 连续 <span id="checkin-streak">0</span> 天 🔥</span>
+    <button class="btn btn-primary" id="checkin-btn" onclick="doCheckin()">📅 每日签到 +5</button></div>
+  </div>
+  <div class="dashboard-grid">
+    <div class="dash-card" onclick="navigate('practice')"><div class="icon">📝</div><div class="title">语法练习</div></div>
+    <div class="dash-card" onclick="navigate('tower')"><div class="icon">🗼</div><div class="title">爬塔闯关</div></div>
+    <div class="dash-card" onclick="navigate('wrongbook')"><div class="icon">📕</div><div class="title">错题本</div></div>
+    <div class="dash-card" onclick="navigate('banks')"><div class="icon">📚</div><div class="title">自定义题库</div></div>
+    <div class="dash-card" onclick="navigate('shared')"><div class="icon">🤝</div><div class="title">共享题库</div></div>
+    <div class="dash-card" onclick="navigate('battle')"><div class="icon">⚔️</div><div class="title">对战</div></div>
+    <div class="dash-card" onclick="navigate('shop')"><div class="icon">🛍️</div><div class="title">积分商城</div></div>
+    <div class="dash-card" onclick="navigate('achievements')"><div class="icon">🏅</div><div class="title">成就</div></div>
+  </div>
+</div></div>
+
+<!-- Practice -->
+<div class="page" id="page-practice"><div class="container">
+  <div id="practice-setup"><div class="card">
+    <h3 style="margin-bottom:16px">练习设置</h3>
+    <div class="form-group"><label>难度 (1=简单, 5=困难)</label><input type="range" id="practice-difficulty" min="0" max="5" value="0" oninput="document.getElementById('diff-label').textContent=this.value==0?'不限':this.value"><span id="diff-label" style="margin-left:8px;font-size:13px;color:var(--text-secondary)">不限</span></div>
+    <div class="form-group"><label>题量</label><input type="range" id="practice-count" min="5" max="30" value="10" oninput="document.getElementById('count-label').textContent=this.value"><span id="count-label" style="margin-left:8px;font-size:13px;color:var(--text-secondary)">10</span></div>
+    <div id="custom-bank-checkboxes" style="margin-top:12px"></div>
+    <div class="form-group" style="display:flex;align-items:center;gap:8px"><label style="margin-bottom:0"><input type="checkbox" id="timed-mode" onchange="state.practice.timed=this.checked"> ⏱️ 限时模式（每题10秒，共3分钟）</label></div>
+    <button class="btn btn-primary btn-block btn-lg" onclick="startPractice()">🚀 开始练习</button>
+  </div></div>
+  <div id="game-area" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div class="progress-bar" style="flex:1;margin-right:16px;margin-bottom:0"><div class="fill" id="progress-fill" style="width:0%"></div></div>
+      <div id="timer-display" style="display:none;font-weight:700;color:var(--danger);font-size:18px;min-width:50px;text-align:right">⏱️ 3:00</div>
+    </div>
+    <div class="game-question"><div class="q-num" id="q-num"></div><div class="sentence" id="q-sentence"></div>
+      <p style="font-size:14px;color:var(--text-secondary);margin-top:8px">高亮词 "<span id="q-word" style="font-weight:700;color:var(--primary)"></span>" 是哪种用法？</p>
+    </div>
+    <div class="game-options" id="game-options"></div>
+    <div class="feedback-box" id="feedback" style="display:none"></div>
+    <button class="btn btn-primary btn-block" id="next-btn" style="display:none;margin-top:16px" onclick="nextQuestion()">下一题 →</button>
+  </div>
+  <div id="result-area" style="display:none">
+    <div class="card score-display"><div class="big-score" id="final-score"></div><div class="stats" id="final-stats"></div>
+      <button class="btn btn-primary btn-lg" style="margin-top:20px" onclick="retryPractice()">🔄 再来一次</button>
+    </div>
+  </div>
+</div></div>
+
+<!-- Tower -->
+<div class="page" id="page-tower"><div class="container">
+  <div class="card" id="tower-levels-card"><div id="tower-levels"></div></div>
+  <div id="tower-game" style="display:none">
+    <div class="progress-bar"><div class="fill" id="tower-progress-fill" style="width:0%"></div></div>
+    <div class="game-question"><div class="q-num" id="tower-q-num"></div><div class="sentence" id="tower-q-sentence"></div>
+      <p style="font-size:14px;color:var(--text-secondary);margin-top:8px">高亮词 "<span id="tower-q-word" style="font-weight:700;color:var(--primary)"></span>" 是哪种用法？</p>
+    </div>
+    <div class="game-options" id="tower-game-options"></div>
+    <div class="feedback-box" id="tower-feedback" style="display:none"></div>
+    <button class="btn btn-primary btn-block" id="tower-next-btn" style="display:none;margin-top:16px" onclick="towerNextQuestion()">下一题 →</button>
+  </div>
+  <div id="tower-result" style="display:none"></div>
+</div></div>
+
+<!-- WrongBook -->
+<div class="page" id="page-wrongbook"><div class="container">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin-bottom:0">📕 错题本</h3>
+      <div><button class="btn btn-primary btn-sm" id="redo-wrongs-btn" onclick="redoWrongs()">🔄 重做错题</button>
+      <button class="btn btn-danger btn-sm" style="margin-left:8px" onclick="clearWrongs()">清空</button>
+      <button class="btn btn-outline btn-sm" style="margin-left:8px" onclick="printWrongBook()">🖨️ 打印</button></div>
+    </div>
+  </div>
+  <div id="wrong-list"></div>
+  <div id="wrong-redo" style="display:none">
+    <div class="progress-bar"><div class="fill" id="wrong-redo-fill" style="width:0%"></div></div>
+    <div class="game-question"><div class="q-num" id="wrong-redo-num"></div><div class="sentence" id="wrong-redo-sentence"></div>
+      <p style="font-size:14px;color:var(--text-secondary);margin-top:8px">高亮词 "<span id="wrong-redo-word" style="font-weight:700;color:var(--primary)"></span>" 是哪种用法？</p>
+    </div>
+    <div class="game-options" id="wrong-redo-options"></div>
+    <div class="feedback-box" id="wrong-redo-fb" style="display:none"></div>
+    <button class="btn btn-primary btn-block" id="wrong-redo-next" style="display:none;margin-top:16px" onclick="wrongRedoNext()">下一题 →</button>
+  </div>
+</div></div>
+
+<!-- Banks -->
+<div class="page" id="page-banks"><div class="container">
+  <div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin-bottom:0">📚 自定义题库</h3><button class="btn btn-primary btn-sm" onclick="showAddBank()">+ 新建题库</button></div></div>
+  <div id="banks-list"></div>
+  <div id="bank-detail" style="display:none"></div>
+</div></div>
+
+<!-- Shared -->
+<div class="page" id="page-shared"><div class="container"><div id="shared-list"><p style="text-align:center;color:var(--text-secondary);padding:60px">加载中...</p></div>
+  <div id="shared-stats" style="display:none"><div class="card"><h3 id="shared-stats-title"></h3><div id="shared-stats-body"></div></div></div>
+  <div id="shared-game" style="display:none"><div class="progress-bar"><div class="fill" id="shared-progress-fill" style="width:0%"></div></div>
+    <div class="game-question"><div class="q-num" id="shared-q-num"></div><div class="sentence" id="shared-q-sentence"></div></div>
+    <div class="game-options" id="shared-game-options"></div>
+    <div class="feedback-box" id="shared-fb" style="display:none"></div>
+    <button class="btn btn-primary btn-block" id="shared-next" style="display:none;margin-top:16px" onclick="sharedNext()">下一题 →</button>
+  </div>
+</div></div>
+
+<!-- Shop -->
+<div class="page" id="page-shop"><div class="container">
+  <div class="card" style="text-align:center"><div class="avatar-container"><div class="avatar-body" id="avatar-preview"></div><p id="avatar-preview-title" style="font-size:13px;color:var(--text-secondary);margin-top:8px">我的形象</p></div>
+    <div id="shop-preview-actions" style="display:none;margin-top:8px;display:none"><button class="btn btn-primary btn-sm" onclick="buyPreviewed()">💰 购买</button><button class="btn btn-outline btn-sm" onclick="cancelPreview()" style="margin-left:8px">↩ 取消预览</button></div>
+  </div>
+  <div class="tabs" id="shop-tabs"></div>
+  <div class="shop-grid" id="shop-items"></div>
+</div></div>
+
+<!-- Leaderboard -->
+<div class="page" id="page-leaderboard"><div class="container"><div class="card"><h2 style="text-align:center">🏆 积分排行榜</h2></div><div class="card" id="leaderboard-list"><p style="text-align:center;color:var(--text-secondary);padding:40px">加载中...</p></div></div></div>
+
+<!-- Achievements -->
+<div class="page" id="page-achievements"><div class="container"><div class="card"><h2 style="text-align:center">🏅 成就徽章</h2></div><div class="dashboard-grid" id="achievements-grid"><p style="text-align:center;color:var(--text-secondary);padding:40px">加载中...</p></div></div></div>
+
+<!-- Battle -->
+<div class="page" id="page-battle"><div class="container">
+  <div class="card"><h2 style="text-align:center">⚔️ 异步对战</h2><p style="text-align:center;color:var(--text-secondary)">创建一个挑战，和同学们比比！</p>
+    <div style="text-align:center;margin-top:16px"><button class="btn btn-primary btn-lg" onclick="createBattle()">🎯 发起新挑战</button></div>
+  </div>
+  <div id="battle-list"><p style="text-align:center;color:var(--text-secondary);padding:20px">加载中...</p></div>
+  <div id="battle-game" style="display:none">
+    <div class="progress-bar"><div class="fill" id="battle-progress-fill" style="width:0%"></div></div>
+    <div class="game-question"><div class="q-num" id="battle-q-num"></div><div class="sentence" id="battle-q-sentence"></div>
+      <p style="font-size:14px;color:var(--text-secondary);margin-top:8px">高亮词 "<span id="battle-q-word" style="font-weight:700;color:var(--primary)"></span>" 是哪种用法？</p></div>
+    <div class="game-options" id="battle-game-options"></div>
+    <div class="feedback-box" id="battle-feedback" style="display:none"></div>
+    <button class="btn btn-primary btn-block" id="battle-next-btn" style="display:none;margin-top:16px" onclick="battleNext()">下一题 →</button>
+  </div>
+  <div id="battle-result" style="display:none"><div class="card score-display" id="battle-result-content"></div></div>
+</div></div>
+
+<!-- Classes -->
+<div class="page" id="page-classes"><div class="container">
+  <div class="card" style="display:flex;justify-content:space-between;align-items:center"><h2>🏫 班级</h2><button class="btn btn-primary btn-sm" onclick="showJoinClass()">+ 加入班级</button></div>
+  <div id="classes-list"><p style="text-align:center;color:var(--text-secondary);padding:40px">加载中...</p></div>
+  <div id="class-detail" style="display:none"><button class="btn btn-outline btn-sm" onclick="document.getElementById('class-detail').style.display='none';loadClasses()" style="margin-bottom:12px">← 返回</button><div class="card"><h3 id="class-detail-title"></h3><div id="class-detail-body"></div></div></div>
+</div></div>
+
+<!-- Teacher -->
+<div class="page" id="page-teacher"><div class="container">
+  <div class="tabs"><button class="tab-btn active" onclick="tSwitchTab('tquestions')">📝 题库管理</button>
+    <button class="tab-btn" onclick="tSwitchTab('tstudents')">👨‍🎓 学生管理</button>
+    <button class="tab-btn" onclick="tSwitchTab('tshared')">🤝 共享题库</button>
+    <button class="tab-btn" onclick="tSwitchTab('tclasses')">🏫 班级管理</button>
+  </div>
+  <div id="tpage-tquestions" class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="margin-bottom:0">默认题库（共 <span id="total-qs">0</span> 题）</h3><button class="btn btn-primary btn-sm" onclick="tShowAddQuestion()">+ 添加题目</button><button class="btn btn-outline btn-sm" onclick="tShowImportModal()">📥 批量导入</button></div>
+    <div style="overflow-x:auto"><table><thead><tr><th>ID</th><th>句子</th><th>高亮词</th><th>答案</th><th>难度</th><th>操作</th></tr></thead><tbody id="tquestions-table"></tbody></table></div>
+  </div>
+  <div id="tpage-tstudents" style="display:none" class="card"><h3>学生列表 <button class="btn btn-outline btn-sm" onclick="tExportData()" style="margin-left:12px">📊 导出CSV</button></h3><table><thead><tr><th>用户名</th><th>积分</th><th>注册时间</th><th>操作</th></tr></thead><tbody id="tstudents-table"></tbody></table></div>
+  <div id="tpage-tshared" style="display:none" class="card"><h3>共享题库</h3><table><thead><tr><th>题库名</th><th>创建者</th><th>题目数</th><th>操作</th></tr></thead><tbody id="tshared-table"></tbody></table></div>
+  <div id="tpage-tclasses" style="display:none" class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="margin-bottom:0">班级列表</h3><button class="btn btn-primary btn-sm" onclick="tShowCreateClass()">+ 创建班级</button></div><table><thead><tr><th>班级名</th><th>邀请码</th><th>人数</th><th>操作</th></tr></thead><tbody id="tclasses-table"></tbody></table></div>
+</div></div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay"><div class="modal" id="modal-content"></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+// ==================== SUPABASE INIT ====================
+const SUPABASE_URL = 'https://mqxvmyxiahhhbmdotdlk.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_v2_DSOU95YW3XKRH0YZbKA_pDRZMfkV';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ==================== SESSION ====================
+function getSession(){ try { return JSON.parse(localStorage.getItem('fs_session')); } catch(e) { return null; } }
+function setSession(s){ localStorage.setItem('fs_session', JSON.stringify(s)); }
+function getUserId(){ const s = getSession(); return s ? s.userId : null; }
+function isTeacher(){ const s = getSession(); return s && s.role === 'teacher'; }
+
+// ==================== HELPERS ====================
+async function sha256(str){ const buf = new TextEncoder().encode(str); const hash = await crypto.subtle.digest('SHA-256', buf); return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join(''); }
+function shuffle(arr){ const a=[...arr]; for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function highlightSentence(s,w){ if(!s||!w) return s; const idx=s.toLowerCase().indexOf(w.toLowerCase()); if(idx===-1) return s; return s.substring(0,idx)+'<span style="background:#fef08a;padding:2px 4px;border-radius:4px">'+s.substring(idx,idx+w.length)+'</span>'+s.substring(idx+w.length); }
+function getLabelByValue(v){ return {attribute:'定语 (attribute)',predicative:'表语 (predicative)',itpattern:'It is...to...'}[v]||v; }
+function escapeHtml(s){ return s.replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+function getCurrentDateStr(){ return new Date().toISOString().split('T')[0]; }
+
+// ==================== STATE ====================
+const state = { user:null, shopPreview:null, practice:{questions:[],index:0,score:0,correct:0,wrongItems:[],answered:false,timed:false,timerSec:0,timerInterval:null,finished:false,settings:{difficulty:0,count:10,banks:['default']}}, tower:{level:0,questions:[],index:0,score:0,correct:0,total:5,answered:false,wrongItems:[]}, wrongRedo:{questions:[],index:0,correct:0,answered:false}, shared:{bankId:null,questions:[],index:0,correct:0,answered:false}, battle:{questions:[],index:0,score:0,correct:0,answered:false,challengeId:null,creatorScore:0,creatorName:''} };
+let audioCtx=null;
+function getAudioCtx(){ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); return audioCtx; }
+function playSound(type){ try{ const ctx=getAudioCtx(); const osc=ctx.createOscillator(); const gain=ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination); if(type==='correct'){ osc.frequency.value=660; osc.type='sine'; gain.gain.value=0.2; osc.start(ctx.currentTime); osc.stop(ctx.currentTime+0.12); setTimeout(()=>{const o2=ctx.createOscillator(); o2.connect(gain); o2.frequency.value=880; o2.type='sine'; o2.start(ctx.currentTime+0.12); o2.stop(ctx.currentTime+0.25);},120); } else { osc.frequency.value=180; osc.type='sawtooth'; gain.gain.value=0.15; osc.start(ctx.currentTime); osc.stop(ctx.currentTime+0.3); } } catch(e){} }
+
+// ==================== THEME ====================
+const THEMES = ['default','autumn','ocean','forest','sunset','midnight','minimal'];
+function applyTheme(theme){ THEMES.forEach(t=>document.body.classList.remove('theme-'+t)); if(theme&&theme!=='default') document.body.classList.add('theme-'+theme); }
+
+// ==================== NAVIGATION ====================
+function navigate(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const el = document.getElementById('page-'+page);
+  if(el) el.classList.add('active');
+  document.querySelectorAll('.nav-links a').forEach(a=>a.classList.remove('active'));
+  const navLink = document.querySelector(`.nav-links a[data-page="${page}"]`);
+  if(navLink) navLink.classList.add('active');
+  if(page==='dashboard') loadDashboard();
+  if(page==='practice') loadPracticeSetup();
+  if(page==='tower') loadTower();
+  if(page==='wrongbook') loadWrongBook();
+  if(page==='banks') loadBanks();
+  if(page==='shared') loadShared();
+  if(page==='shop') loadShop();
+  if(page==='leaderboard') loadLeaderboard();
+  if(page==='achievements') loadAchievements();
+  if(page==='battle') loadBattles();
+  if(page==='classes') loadClasses();
+  if(page==='teacher'){ tSwitchTab('tquestions'); }
+}
+
+// ==================== AUTH ====================
+function switchAuthTab(tab){ document.getElementById('login-form').style.display=tab==='login'?'block':'none'; document.getElementById('register-form').style.display=tab==='register'?'block':'none'; document.querySelectorAll('.auth-tab').forEach(t=>t.classList.toggle('active',t.textContent.includes(tab==='login'?'登录':'注册'))); }
+function showAuthError(msg,isError=true){ const el=document.getElementById('auth-error'); el.textContent=msg; el.style.color=isError?'var(--danger)':'var(--success)'; el.style.background=isError?'#fee2e2':'#dcfce7'; el.style.display='block'; }
+
+async function doLogin(){
+  const username=document.getElementById('login-username').value.trim();
+  const password=document.getElementById('login-password').value.trim();
+  const role=document.getElementById('login-role').value;
+  if(!username||!password){ showAuthError('请填写用户名和密码'); return; }
+  const hash=await sha256(password);
+  const {data}=await sb.from('users').select('*').eq('username',username).eq('password_hash',hash).eq('role',role).single();
+  if(!data){ showAuthError('用户名或密码错误'); return; }
+  setSession({userId:data.id,role:data.role,username:data.username});
+  state.user=data;
+  document.getElementById('page-auth').classList.remove('active');
+  showApp();
+}
+
+async function doRegister(){
+  const username=document.getElementById('reg-username').value.trim();
+  const password=document.getElementById('reg-password').value.trim();
+  const role=document.getElementById('reg-role').value;
+  if(!username||!password){ showAuthError('请填写用户名和密码'); return; }
+  if(password.length<4){ showAuthError('密码至少4位'); return; }
+  const {data:exist}=await sb.from('users').select('id').eq('username',username).single();
+  if(exist){ showAuthError('用户名已存在'); return; }
+  const hash=await sha256(password);
+  const {data}=await sb.from('users').insert({username,password_hash:hash,role}).select('id,username,role,points').single();
+  showAuthError('注册成功！请登录',false);
+  switchAuthTab('login');
+  document.getElementById('login-username').value=username;
+}
+
+async function doLogout(){ localStorage.removeItem('fs_session'); state.user=null; document.getElementById('navbar').style.display='none'; document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); document.getElementById('page-auth').classList.add('active'); }
+
+async function refreshUser(){
+  const sess=getSession(); if(!sess) return null;
+  const {data}=await sb.from('users').select('*').eq('id',sess.userId).single();
+  if(data){ state.user=data; setSession({...sess,username:data.username}); }
+  return data;
+}
+
+function updateUserUI(){
+  if(!state.user) return;
+  document.getElementById('nav-user').textContent=state.user.username;
+  document.getElementById('nav-points').textContent='⭐ '+state.user.points;
+  document.getElementById('dash-points').textContent=state.user.points;
+  document.getElementById('dash-name').textContent=state.user.username;
+  document.getElementById('nav-teacher').style.display=state.user.role==='teacher'?'inline':'none';
+}
+
+function showApp(){
+  document.getElementById('navbar').style.display='flex';
+  updateUserUI();
+  navigate('dashboard');
+}
+
+async function init(){
+  const sess=getSession();
+  if(sess){
+    const {data}=await sb.from('users').select('*').eq('id',sess.userId).single();
+    if(data){ state.user=data; document.getElementById('page-auth').classList.remove('active'); showApp(); return; }
+  }
+  document.getElementById('page-auth').classList.add('active');
+}
+
+// ==================== DASHBOARD ====================
+async function loadDashboard(){ const u=await refreshUser(); updateUserUI(); try{ const {data}=await sb.from('daily_checkins').select('*').eq('user_id',state.user.id).eq('checkin_date',getCurrentDateStr()).single(); if(data){ document.getElementById('checkin-btn').style.display='none'; document.getElementById('checkin-status').style.display='inline'; document.getElementById('checkin-streak').textContent=data.streak; } else { document.getElementById('checkin-btn').style.display='inline-block'; document.getElementById('checkin-status').style.display='none'; } } catch(e){ document.getElementById('checkin-btn').style.display='inline-block'; } }
+
+async function doCheckin(){
+  const userId=state.user.id; const today=getCurrentDateStr();
+  const {data:exist}=await sb.from('daily_checkins').select('*').eq('user_id',userId).eq('checkin_date',today).single();
+  if(exist){ alert('今天已签到'); return; }
+  const {data:last}=await sb.from('daily_checkins').select('streak').eq('user_id',userId).order('checkin_date',{ascending:false}).limit(1).single();
+  const streak=last?last.streak+1:1; let bonus=5; if(streak%7===0) bonus+=20;
+  await sb.from('daily_checkins').insert({user_id:userId,checkin_date:today,streak});
+  await sb.from('users').update({points:state.user.points+bonus}).eq('id',userId);
+  state.user.points+=bonus; updateUserUI(); loadDashboard();
+  if(streak>=7) await unlockAchievement('streak_7');
+  checkAchievements();
+  alert(`✅ 签到成功！连续${streak}天，+${bonus}积分`+(streak%7===0?' 🎉 7天额外奖励！':''));
+}
+
+// ==================== ACHIEVEMENTS ====================
+const ACHIEVEMENTS={ first_blood:{name:'初出茅庐',desc:'完成第一次答题',icon:'🌱',hidden:false}, perfect_10:{name:'十全十美',desc:'连续10题全对',icon:'⭐',hidden:false}, century:{name:'百题斩',desc:'累计答对100题',icon:'💯',hidden:false}, tower_master:{name:'爬塔之王',desc:'五层塔全部通关',icon:'🗼',hidden:false}, sharer:{name:'知识分享家',desc:'首次分享自定义题库',icon:'🤝',hidden:false}, collector:{name:'时尚达人',desc:'购买5件商城物品',icon:'👗',hidden:false}, streak_7:{name:'七日之约',desc:'连续签到7天',icon:'🔥',hidden:false}, quizmaster:{name:'答题大师',desc:'累计答对500题',icon:'🏆',hidden:false}, speedster:{name:'闪电答题手',desc:'限时3分钟答对15题',icon:'⚡',hidden:false}, social_butterfly:{name:'社交达人',desc:'完成10次共享题库挑战',icon:'🦋',hidden:false}, night_owl:{name:'夜猫子',desc:'在凌晨完成一次练习',icon:'🦉',hidden:true}, perfectionist:{name:'完美主义者',desc:'一次练习10题以上全部答对',icon:'💎',hidden:true}, theme_collector:{name:'主题收藏家',desc:'购买全部6种UI主题',icon:'🎨',hidden:true}, grammar_prof:{name:'语法教授',desc:'错题重做达到100%正确率',icon:'🎓',hidden:false}, streaker_30:{name:'坚持不懈',desc:'累计签到30天',icon:'📅',hidden:false}, bank_master:{name:'题库大师',desc:'创建3个自定义题库',icon:'📚',hidden:false}, explorer:{name:'全能探险家',desc:'体验所有练习模式',icon:'🧭',hidden:true}, flawless:{name:'零失误',desc:'限时15题全部答对',icon:'🌟',hidden:true}, teacher_pet:{name:'传道授业',desc:'共享题库被3位同学练习',icon:'👑',hidden:false}, daily_warrior:{name:'每日勇士',desc:'完成7天每日爬塔',icon:'⚔️',hidden:false} };
+
+async function unlockAchievement(key){
+  try{ await sb.from('achievements').insert({user_id:state.user.id,achievement_key:key}); } catch(e){}
+}
+async function checkAchievements(){
+  const uid=state.user.id;
+  if(state.user.points>=30) unlockAchievement('first_blood');
+  if(state.user.points>=200) unlockAchievement('century');
+  if(state.user.points>=1000) unlockAchievement('quizmaster');
+  const {count:towerCnt}=await sb.from('tower_progress').select('*',{count:'exact',head:true}).eq('user_id',uid).eq('completed',1);
+  if(towerCnt>=5) unlockAchievement('tower_master');
+  const {count:bankCnt}=await sb.from('custom_banks').select('*',{count:'exact',head:true}).eq('user_id',uid).eq('is_shared',1);
+  if(bankCnt>=1) unlockAchievement('sharer');
+  if(bankCnt>=3) unlockAchievement('bank_master');
+  const {count:checkinCnt}=await sb.from('daily_checkins').select('*',{count:'exact',head:true}).eq('user_id',uid);
+  if(checkinCnt>=30) unlockAchievement('streaker_30');
+  const {count:dailyCnt}=await sb.from('tower_daily').select('*',{count:'exact',head:true}).eq('user_id',uid).gt('best_level',0);
+  if(dailyCnt>=7) unlockAchievement('daily_warrior');
+  if(new Date().getHours()>=0&&new Date().getHours()<6) unlockAchievement('night_owl');
+}
+async function loadAchievements(){
+  const {data:unlocked}=await sb.from('achievements').select('achievement_key').eq('user_id',state.user.id);
+  const unlockedKeys=new Set(unlocked.map(u=>u.achievement_key));
+  const grid=document.getElementById('achievements-grid');
+  grid.innerHTML=Object.entries(ACHIEVEMENTS).map(([key,a])=>{const isHidden=a.hidden&&!unlockedKeys.has(key); return `<div class="card" style="text-align:center;padding:20px;opacity:${unlockedKeys.has(key)?'1':'0.4'}"><div style="font-size:36px">${unlockedKeys.has(key)?a.icon:'🔒'}</div><div style="font-weight:600;margin:8px 0">${isHidden?'???':a.name}</div><div style="font-size:12px;color:var(--text-secondary)">${isHidden?'隐藏成就':a.desc}</div>${unlockedKeys.has(key)?'<div style="color:var(--success);font-size:12px;margin-top:4px">✅ 已解锁</div>':''}</div>`}).join('');
+}
+
+// ==================== PRACTICE ====================
+async function loadPracticeSetup(){
+  await refreshUser();
+  const {data:banks}=await sb.from('custom_banks').select('*').eq('user_id',state.user.id);
+  document.getElementById('custom-bank-checkboxes').innerHTML=banks.map(b=>`<label style="display:block;margin:4px 0;font-size:14px"><input type="checkbox" value="custom_${b.id}" class="bank-cb"> 📚 ${b.name}</label>`).join('')||'<p style="font-size:12px;color:var(--text-secondary)">你还没有自定义题库</p>';
+  document.getElementById('practice-setup').style.display='block'; document.getElementById('game-area').style.display='none'; document.getElementById('result-area').style.display='none';
+}
+async function startPractice(){
+  const diff=parseInt(document.getElementById('practice-difficulty').value);
+  const count=parseInt(document.getElementById('practice-count').value);
+  const cbs=Array.from(document.querySelectorAll('.bank-cb:checked')).map(cb=>cb.value);
+  const hasDefault=cbs.length===0||cbs.includes('default');
+  const customIds=cbs.filter(b=>b.startsWith('custom_')).map(b=>parseInt(b.replace('custom_','')));
+
+  let allQs=[];
+  if(hasDefault){ const {data}=await sb.from('default_questions').select('*'); allQs.push(...data.map(q=>({...q,source:'default'}))); }
+  for(const bid of customIds){ const {data}=await sb.from('custom_questions').select('*').eq('bank_id',bid); allQs.push(...data.map(q=>({...q,source:'custom',id:q.id}))); }
+  if(diff>0) allQs=allQs.filter(q=>q.difficulty===diff);
+  if(allQs.length===0){ alert('当前设置下没有可用题目'); return; }
+
+  const questions=shuffle(allQs).slice(0,count);
+  state.practice={...state.practice,questions,index:0,score:0,correct:0,wrongItems:[],answered:false,finished:false};
+  state.practice.timed=document.getElementById('timed-mode')?.checked||false;
+  state.practice.timerSec=state.practice.timed?180:0;
+  if(state.practice.timerInterval) clearInterval(state.practice.timerInterval);
+  document.getElementById('practice-setup').style.display='none'; document.getElementById('game-area').style.display='block'; document.getElementById('result-area').style.display='none';
+  document.getElementById('timer-display').style.display=state.practice.timed?'block':'none';
+  if(state.practice.timed) startTimer();
+  showPracticeQuestion();
+}
+
+function startTimer(){ updateTimerDisplay(); state.practice.timerInterval=setInterval(()=>{ state.practice.timerSec--; updateTimerDisplay(); if(state.practice.timerSec<=0){ clearInterval(state.practice.timerInterval); showPracticeResult(); } },1000); }
+function updateTimerDisplay(){ const m=Math.floor(state.practice.timerSec/60); const s=state.practice.timerSec%60; document.getElementById('timer-display').textContent=`⏱️ ${m}:${String(s).padStart(2,'0')}`; }
+
+function showPracticeQuestion(){
+  const {questions,index}=state.practice;
+  if(index>=questions.length) return showPracticeResult();
+  state.practice.answered=false; const q=questions[index];
+  document.getElementById('q-num').textContent=`${index+1}/${questions.length} · 难度 ${q.difficulty||1}`;
+  document.getElementById('q-sentence').innerHTML=highlightSentence(q.sentence,q.highlighted_word);
+  document.getElementById('q-word').textContent=q.highlighted_word;
+  document.getElementById('progress-fill').style.width=(index/questions.length*100)+'%';
+  const opts=document.getElementById('game-options'); opts.innerHTML='';
+  [{label:'定语 (attribute)',value:'attribute'},{label:'表语 (predicative)',value:'predicative'},{label:'It is...to...',value:'itpattern'}].forEach(o=>{const btn=document.createElement('button'); btn.className='game-option'; btn.textContent=o.label; btn.onclick=()=>answerPractice(o.value); opts.appendChild(btn);});
+  document.getElementById('feedback').style.display='none'; document.getElementById('next-btn').style.display='none';
+}
+
+async function answerPractice(userAnswer){
+  if(state.practice.answered) return; state.practice.answered=true;
+  const q=state.practice.questions[state.practice.index]; const correct=q.correct_answer===userAnswer;
+  playSound(correct?'correct':'wrong');
+  if(correct){ state.practice.correct++; state.practice.score+=10; } else {
+    state.practice.wrongItems.push(q);
+    try{ await sb.from('wrong_answers').insert({user_id:state.user.id,question_id:q.id||0,question_source:q.source||'default',user_answer:userAnswer,correct_answer:q.correct_answer,sentence:q.sentence,highlighted_word:q.highlighted_word,wrong_hint:q.wrong_hint||''}); } catch(e){}
+  }
+  if(correct){ await sb.from('users').update({points:state.user.points+2}).eq('id',state.user.id); state.user.points+=2; updateUserUI(); }
+  checkAchievements();
+  const opts=document.getElementById('game-options').children; const al={attribute:0,predicative:1,itpattern:2};
+  for(let i=0;i<opts.length;i++){ opts[i].disabled=true; if(opts[i].textContent.startsWith(getLabelByValue(q.correct_answer).split(' ')[0])) opts[i].classList.add('correct'); }
+  if(!correct) opts[al[userAnswer]].classList.add('wrong');
+  const fb=document.getElementById('feedback'); fb.style.display='block'; fb.className='feedback-box '+(correct?'correct':'wrong');
+  fb.innerHTML=correct?'✅ 正确！'+(q.wrong_hint?`<br><small>${q.wrong_hint}</small>`:''):`❌ 正确答案：<strong>${getLabelByValue(q.correct_answer)}</strong>`+(q.wrong_hint?`<br><small>💡 ${q.wrong_hint}</small>`:'');
+  fb.innerHTML+=`<br><small style="margin-top:6px;display:inline-block">这道题：<button class="btn btn-sm btn-outline" onclick="voteQuestion(${q.id},'up')">👍</button> <button class="btn btn-sm btn-outline" onclick="voteQuestion(${q.id},'down')">👎</button></small>`;
+  document.getElementById('next-btn').style.display='block';
+}
+function nextQuestion(){ state.practice.index++; showPracticeQuestion(); }
+
+async function voteQuestion(qid,type){
+  try{ await sb.from('question_votes').insert({question_id:qid,user_id:state.user.id,vote_type:type}); alert(type==='up'?'👍 感谢点赞！':'👎 已标记，我们会改进'); } catch(e){ alert('投票失败'); }
+}
+
+function showPracticeResult(){
+  if(state.practice.finished) return; state.practice.finished=true;
+  if(state.practice.timerInterval) clearInterval(state.practice.timerInterval);
+  const {correct,questions,score,timed,timerSec}=state.practice;
+  const pct=questions.length>0?Math.round(correct/questions.length*100):0;
+  document.getElementById('game-area').style.display='none'; document.getElementById('result-area').style.display='block';
+  document.getElementById('final-score').textContent=pct+'%';
+  let extra=''; if(timed){ const used=180-(timerSec||0); extra=` · 限时 · 用时${Math.floor(used/60)}:${String(used%60).padStart(2,'0')}`; if(pct>=60)sb.from('users').update({points:state.user.points+Math.floor(correct*3)}).eq('id',state.user.id); }
+  document.getElementById('final-stats').innerHTML=`共${questions.length}题 · 答对${correct}题 · ${score}分${extra}${timed&&timerSec<=0?'<br><span style="color:var(--danger)">⏰ 时间到！</span>':''}`;
+  refreshUser(); checkAchievements();
+}
+function retryPractice(){ loadPracticeSetup(); }
+
+// ==================== TOWER ====================
+async function loadTower(){
+  await refreshUser(); document.getElementById('tower-game').style.display='none'; document.getElementById('tower-result').style.display='none'; document.getElementById('tower-levels-card').style.display='block';
+  const levelNames=['','🌱 初春·基础语法','☀️ 盛夏·提升挑战','🍁 金秋·综合应用','❄️ 寒冬·高级辨析','🌟 巅峰·终极考验'];
+  const levelDescs=['','形容词基本分类','It is...to...区分','混合用法辨析','复杂句式判断','极限挑战'];
+  const today=getCurrentDateStr();
+  const {data:daily}=await sb.from('tower_daily').select('*').eq('user_id',state.user.id).eq('attempt_date',today).single();
+  if(daily&&daily.best_level>=5){
+    document.getElementById('tower-levels').innerHTML=`<div class="card score-display"><div style="font-size:48px">🗼</div><h3>今日爬塔已完成！</h3><div class="stats">总计${daily.total_score}分 · 最高Lv.${daily.best_level}</div><p style="color:var(--text-secondary);margin-top:8px">明天再来~</p></div>`;
+    return;
+  }
+  const completed=daily?daily.completed_levels.split(',').filter(Boolean).map(Number):[];
+  const container=document.getElementById('tower-levels'); container.innerHTML='';
+  for(let i=5;i>=1;i--){
+    const div=document.createElement('div'); div.className='tower-level';
+    if(completed.includes(i)) div.classList.add('completed');
+    const isUnlocked=i===1||completed.includes(i-1);
+    if(!isUnlocked&&i>1) div.classList.add('locked'); else if(isUnlocked&&!completed.includes(i)) div.classList.add('current');
+    div.innerHTML=`<div class="level-num">Lv.${i}</div><div class="level-label">${levelNames[i]}</div><div style="font-size:11px;color:var(--text-secondary)">${levelDescs[i]}</div>${completed.includes(i)?'<div>✅ 已通关</div>':''}`;
+    div.onclick=()=>{ if(isUnlocked) startTowerLevel(i); }; container.appendChild(div);
+    if(i>1){ const conn=document.createElement('div'); conn.className='tower-connector'; if(completed.includes(i-1)) conn.style.background='var(--success)'; container.appendChild(conn); }
+  }
+}
+
+async function startTowerLevel(level){
+  state.tower={level,questions:[],index:0,score:0,correct:0,total:5,answered:false,wrongItems:[]};
+  const today=getCurrentDateStr(); let {data:daily}=await sb.from('tower_daily').select('*').eq('user_id',state.user.id).eq('attempt_date',today).single();
+  if(!daily){
+    const allQs={};
+    for(let lv=1;lv<=5;lv++){ const {data}=await sb.from('default_questions').select('*').eq('difficulty',lv); allQs[lv]=shuffle(data).slice(0,5); }
+    const {data:ins}=await sb.from('tower_daily').insert({user_id:state.user.id,attempt_date:today,questions_json:JSON.stringify(allQs)}).select().single();
+    daily=ins;
+  }
+  const allQs=JSON.parse(daily.questions_json); const levelQs=allQs[level]||[];
+  if(levelQs.length===0){ alert('该层暂无题目'); return; }
+  state.tower.questions=levelQs; state.tower.total=levelQs.length;
+  document.getElementById('tower-levels-card').style.display='none'; document.getElementById('tower-game').style.display='block'; document.getElementById('tower-result').style.display='none';
+  showTowerQuestion();
+}
+
+function showTowerQuestion(){
+  const {questions,index}=state.tower; if(index>=questions.length) return showTowerResult();
+  state.tower.answered=false; const q=questions[index];
+  document.getElementById('tower-q-num').textContent=`Lv.${state.tower.level} · ${index+1}/${state.tower.total}题`;
+  document.getElementById('tower-q-sentence').innerHTML=highlightSentence(q.sentence,q.highlighted_word);
+  document.getElementById('tower-q-word').textContent=q.highlighted_word;
+  document.getElementById('tower-progress-fill').style.width=(index/state.tower.total*100)+'%';
+  const opts=document.getElementById('tower-game-options'); opts.innerHTML='';
+  [{label:'定语 (attribute)',value:'attribute'},{label:'表语 (predicative)',value:'predicative'},{label:'It is...to...',value:'itpattern'}].forEach(o=>{const btn=document.createElement('button'); btn.className='game-option'; btn.textContent=o.label; btn.onclick=()=>answerTower(o.value); opts.appendChild(btn);});
+  document.getElementById('tower-feedback').style.display='none'; document.getElementById('tower-next-btn').style.display='none';
+}
+
+function answerTower(userAnswer){
+  if(state.tower.answered) return; state.tower.answered=true;
+  const q=state.tower.questions[state.tower.index]; const correct=q.correct_answer===userAnswer;
+  playSound(correct?'correct':'wrong');
+  if(correct){ state.tower.correct++; state.tower.score+=20; } else { state.tower.wrongItems.push({...q,userAnswer}); }
+  const opts=document.getElementById('tower-game-options').children; const al={attribute:0,predicative:1,itpattern:2};
+  for(let i=0;i<opts.length;i++){ opts[i].disabled=true; if(opts[i].textContent.startsWith(getLabelByValue(q.correct_answer).split(' ')[0])) opts[i].classList.add('correct'); }
+  if(!correct) opts[al[userAnswer]].classList.add('wrong');
+  const fb=document.getElementById('tower-feedback'); fb.style.display='block'; fb.className='feedback-box '+(correct?'correct':'wrong');
+  fb.innerHTML=correct?'✅ 正确！':`❌ 正确答案：${getLabelByValue(q.correct_answer)}`; if(q.wrong_hint) fb.innerHTML+=`<br><small>${q.wrong_hint}</small>`;
+  document.getElementById('tower-next-btn').style.display='block';
+}
+function towerNextQuestion(){ state.tower.index++; showTowerQuestion(); }
+
+async function showTowerResult(){
+  document.getElementById('tower-game').style.display='none';
+  const {level,score,correct,total,wrongItems}=state.tower; const pct=total>0?Math.round(correct/total*100):0; const passed=pct>=60;
+  for(const w of wrongItems){ try{ await sb.from('wrong_answers').insert({user_id:state.user.id,question_id:w.id||0,user_answer:w.userAnswer,correct_answer:w.correct_answer,sentence:w.sentence,highlighted_word:w.highlighted_word,wrong_hint:w.wrong_hint||''}); } catch(e){} }
+  const today=getCurrentDateStr(); const {data:daily}=await sb.from('tower_daily').select('*').eq('user_id',state.user.id).eq('attempt_date',today).single();
+  if(daily){
+    const comp=(daily.completed_levels?daily.completed_levels.split(',').filter(Boolean):[]); const cSet=new Set(comp.map(Number));
+    if(passed) cSet.add(level); const nc=Array.from(cSet).sort((a,b)=>a-b);
+    await sb.from('tower_daily').update({completed_levels:nc.join(','),best_level:passed?Math.max(daily.best_level,level):daily.best_level,total_score:(daily.total_score||0)+score}).eq('id',daily.id);
+    if(passed){ await sb.from('users').update({points:state.user.points+level*50}).eq('id',state.user.id); state.user.points+=level*50; updateUserUI(); }
+  }
+  const rdiv=document.getElementById('tower-result'); rdiv.style.display='block';
+  rdiv.innerHTML=`<div class="card score-display"><div class="big-score">${pct}%</div><div class="stats">Lv.${level} · ${total}题 · 答对${correct}题 · ${score}分</div><div style="font-size:18px;margin-top:8px">${passed?'🎉 通关成功！':'💪 未达标（需≥60%）'}</div>${passed?`<div style="color:var(--success);margin-top:4px">+${level*50}积分！</div>`:''}<div style="margin-top:20px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap"><button class="btn btn-outline" onclick="navigate('tower')">🗼 返回</button>${!passed?`<button class="btn btn-primary" onclick="startTowerLevel(${level})">🔄 再试</button>`:''}<button class="btn btn-outline" onclick="navigate('dashboard')">🏠 首页</button></div></div>`;
+  await refreshUser(); checkAchievements();
+}
+
+// ==================== WRONG BOOK ====================
+async function loadWrongBook(){
+  document.getElementById('wrong-list').style.display=''; const card=document.querySelector('#page-wrongbook .card'); if(card) card.style.display='';
+  document.getElementById('wrong-redo').style.display='none';
+  const {data:items}=await sb.from('wrong_answers').select('*').eq('user_id',state.user.id).order('answered_at',{ascending:false});
+  const container=document.getElementById('wrong-list');
+  if(!items||items.length===0){ container.innerHTML='<p style="text-align:center;color:var(--text-secondary);padding:60px">🎉 太棒了！错题本是空的~</p>'; document.getElementById('redo-wrongs-btn').style.display='none'; return; }
+  document.getElementById('redo-wrongs-btn').style.display='inline-flex';
+  container.innerHTML=items.map((item,idx)=>`<div class="wrong-item"><div class="sentence">${highlightSentence(item.sentence,item.highlighted_word)}</div><div class="meta"><span>❌ 你的答案：${getLabelByValue(item.user_answer)}</span><span>✅ 正确答案：${getLabelByValue(item.correct_answer)}</span><span style="color:var(--text-secondary);font-size:12px">${new Date(item.answered_at).toLocaleString('zh-CN')}</span></div><div class="wrong-hint" style="display:none;margin-top:10px;padding:10px;background:var(--bg);border-radius:8px;font-size:13px">${item.wrong_hint?'💡 '+item.wrong_hint:'暂无解析'}</div><div style="font-size:11px;color:var(--primary);margin-top:4px;cursor:pointer" onclick="toggleWrongHint(${idx},this.parentElement)">点击查看解析</div></div>`).join('');
+}
+function toggleWrongHint(idx,el){ const hint=el.querySelector('.wrong-hint'); const toggle=el.querySelector('div:last-child'); if(hint.style.display==='none'||!hint.style.display){ hint.style.display='block'; toggle.textContent='收起解析'; } else { hint.style.display='none'; toggle.textContent='点击查看解析'; } }
+async function clearWrongs(){ if(!confirm('确定清空所有错题？')) return; await sb.from('wrong_answers').delete().eq('user_id',state.user.id); loadWrongBook(); }
+function printWrongBook(){
+  const items=document.querySelectorAll('.wrong-item'); if(items.length===0){ alert('没有错题'); return; }
+  let html='<html><head><meta charset="UTF-8"><title>错题本</title><style>body{font-family:sans-serif;padding:20px}.item{border:1px solid #ddd;padding:12px;margin:8px 0;border-radius:8px}h2{text-align:center}</style></head><body><h2>📕 我的错题本</h2>';
+  items.forEach(el=>{html+=`<div class="item"><div>${el.querySelector('.sentence')?.innerHTML||''}</div><div style="color:#c62828">${el.querySelector('.meta')?.textContent||''}</div></div>`;});
+  html+='</body></html>'; const w=window.open('','_blank'); w.document.write(html); w.document.close(); setTimeout(()=>w.print(),500);
+}
+
+async function redoWrongs(){
+  const {data:items}=await sb.from('wrong_answers').select('*').eq('user_id',state.user.id).order('answered_at',{ascending:false});
+  if(!items||items.length===0){ alert('没有错题'); return; }
+  state.wrongRedo={questions:items,index:0,correct:0,answered:false};
+  document.getElementById('wrong-list').style.display='none'; document.querySelector('#page-wrongbook .card').style.display='none';
+  document.getElementById('wrong-redo').style.display='block'; showWrongRedoQuestion();
+}
+function showWrongRedoQuestion(){
+  const {questions,index}=state.wrongRedo; if(index>=questions.length) return showWrongRedoResult();
+  state.wrongRedo.answered=false; const q=questions[index];
+  document.getElementById('wrong-redo-num').textContent=`${index+1}/${questions.length}`;
+  document.getElementById('wrong-redo-sentence').innerHTML=highlightSentence(q.sentence,q.highlighted_word);
+  document.getElementById('wrong-redo-word').textContent=q.highlighted_word;
+  document.getElementById('wrong-redo-fill').style.width=(index/questions.length*100)+'%';
+  const opts=document.getElementById('wrong-redo-options'); opts.innerHTML='';
+  [{label:'定语 (attribute)',value:'attribute'},{label:'表语 (predicative)',value:'predicative'},{label:'It is...to...',value:'itpattern'}].forEach(o=>{const btn=document.createElement('button'); btn.className='game-option'; btn.textContent=o.label; btn.onclick=()=>answerWrongRedo(o.value); opts.appendChild(btn);});
+  document.getElementById('wrong-redo-fb').style.display='none'; document.getElementById('wrong-redo-next').style.display='none';
+}
+function answerWrongRedo(uA){
+  if(state.wrongRedo.answered) return; state.wrongRedo.answered=true;
+  const q=state.wrongRedo.questions[state.wrongRedo.index]; const correct=q.correct_answer===uA;
+  if(correct) state.wrongRedo.correct++;
+  const opts=document.getElementById('wrong-redo-options').children; const al={attribute:0,predicative:1,itpattern:2};
+  for(let i=0;i<opts.length;i++){ opts[i].disabled=true; if(opts[i].textContent.startsWith(getLabelByValue(q.correct_answer).split(' ')[0])) opts[i].classList.add('correct'); }
+  if(!correct) opts[al[uA]].classList.add('wrong');
+  const fb=document.getElementById('wrong-redo-fb'); fb.style.display='block'; fb.className='feedback-box '+(correct?'correct':'wrong');
+  fb.innerHTML=correct?'✅ 正确':`❌ 正确答案：${getLabelByValue(q.correct_answer)}`;
+  document.getElementById('wrong-redo-next').style.display='block';
+}
+function wrongRedoNext(){ state.wrongRedo.index++; showWrongRedoQuestion(); }
+function showWrongRedoResult(){
+  const {correct,questions}=state.wrongRedo; const pct=Math.round(correct/questions.length*100);
+  document.getElementById('wrong-redo').innerHTML=`<div class="card score-display"><div class="big-score">${pct}%</div><div class="stats">答对${correct}/${questions.length}题</div><button class="btn btn-primary btn-lg" style="margin-top:20px" onclick="navigate('wrongbook')">📕 返回错题本</button></div>`;
+  if(pct===100) unlockAchievement('grammar_prof');
+}
+
+// ==================== BANKS ====================
+async function loadBanks(){
+  const {data:banks}=await sb.from('custom_banks').select('*,users!inner(username)').eq('user_id',state.user.id);
+  document.getElementById('banks-list').innerHTML=banks.map(b=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center"><div><strong>${b.name}</strong></div><div style="display:flex;gap:8px"><button class="btn btn-outline btn-sm" onclick="showBankQuestions(${b.id},'${escapeHtml(b.name)}')">查看题目</button><button class="btn btn-outline btn-sm" onclick="toggleShare(${b.id},${b.is_shared})">${b.is_shared?'取消共享':'分享'}</button><button class="btn btn-danger btn-sm" onclick="deleteBank(${b.id})">删除</button></div></div>`).join('')||'<p style="text-align:center;color:var(--text-secondary);padding:60px">还没有题库，创建一个吧</p>';
+  document.getElementById('bank-detail').style.display='none';
+}
+function showAddBank(){ const name=prompt('题库名称：'); if(!name) return; sb.from('custom_banks').insert({user_id:state.user.id,name}).then(()=>loadBanks()); }
+async function deleteBank(id){ if(!confirm('确定删除？')) return; await sb.from('custom_questions').delete().eq('bank_id',id); await sb.from('custom_banks').delete().eq('id',id).eq('user_id',state.user.id); loadBanks(); }
+async function toggleShare(id,cur){ await sb.from('custom_banks').update({is_shared:cur?0:1}).eq('id',id).eq('user_id',state.user.id); loadBanks(); if(!cur) unlockAchievement('sharer'); checkAchievements(); }
+async function showBankQuestions(bid,name){
+  const {data:qs}=await sb.from('custom_questions').select('*').eq('bank_id',bid);
+  document.getElementById('banks-list').style.display='none';
+  document.getElementById('bank-detail').style.display='block';
+  document.getElementById('bank-detail').innerHTML=`<button class="btn btn-outline btn-sm" onclick="document.getElementById('bank-detail').style.display='none'; document.getElementById('banks-list').style.display='block'; loadBanks()">← 返回</button><div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3>${name}（${qs.length}题）</h3><button class="btn btn-primary btn-sm" onclick="showAddQuestionToBank(${bid})">+ 添加题目</button></div>${qs.map(q=>`<div style="padding:8px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px"><p>${highlightSentence(q.sentence,q.highlighted_word)}</p><p style="font-size:12px;color:var(--text-secondary)">答案：${getLabelByValue(q.correct_answer)} | 难度：${q.difficulty} <button class="btn btn-danger btn-sm" style="margin-left:8px" onclick="deleteBankQuestion(${q.id},${bid})">删除</button></p></div>`).join('')||'<p style="color:var(--text-secondary)">暂无题目</p>'}</div>`;
+}
+function showAddQuestionToBank(bid){
+  const sentence=prompt('句子：'); if(!sentence) return; const word=prompt('高亮词：'); if(!word) return; const answer=prompt('答案(attribute/predicative/itpattern)：'); if(!answer) return;
+  sb.from('custom_questions').insert({bank_id:bid,sentence,highlighted_word:word,correct_answer:answer,difficulty:3}).then(()=>showBankQuestions(bid,''));
+}
+async function deleteBankQuestion(qid,bid){ await sb.from('custom_questions').delete().eq('id',qid); showBankQuestions(bid,''); }
+
+// ==================== SHARED ====================
+async function loadShared(){
+  const {data:banks}=await sb.from('custom_banks').select('*,users!inner(username)').eq('is_shared',1);
+  const userId=state.user.id;
+  document.getElementById('shared-list').style.display='block'; document.getElementById('shared-stats').style.display='none'; document.getElementById('shared-game').style.display='none';
+  document.getElementById('shared-list').innerHTML=banks.map(b=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center"><div><strong>${b.name}</strong> · ${b.users?b.users.username:''}</div><div style="display:flex;gap:8px"><button class="btn btn-outline btn-sm" onclick="viewSharedStats(${b.id})">📊 统计</button>${b.user_id!==userId?`<button class="btn btn-primary btn-sm" onclick="startSharedGame(${b.id})">开始练习</button>`:''}</div></div>`).join('')||'<p style="text-align:center;color:var(--text-secondary);padding:60px">暂无共享题库</p>';
+}
+async function viewSharedStats(bid){ try{ const {data}=await sb.from('shared_bank_stats').select('*,users!inner(username)').eq('bank_id',bid); document.getElementById('shared-list').style.display='none'; document.getElementById('shared-stats').style.display='block'; document.getElementById('shared-stats-title').textContent='📊 准确率排行'; document.getElementById('shared-stats-body').innerHTML=data.map((s,i)=>`<div class="leaderboard-item"><span class="rank ${i===0?'gold':i===1?'silver':i===2?'bronze':''}">#${i+1}</span><span class="name">${s.users.username}</span><span>${s.attempts}次 · ${s.attempts>0?Math.round(s.correct/s.attempts*100):0}%</span></div>`).join('')||'<p style="text-align:center;color:var(--text-secondary);padding:40px">暂无数据</p>'; } catch(e){} }
+async function startSharedGame(bid){
+  const {data:bank}=await sb.from('custom_banks').select('*').eq('id',bid).single();
+  const {data:qs}=await sb.from('custom_questions').select('*').eq('bank_id',bid);
+  state.shared={bankId:bid,questions:shuffle(qs),index:0,correct:0,total:0,answered:false};
+  document.getElementById('shared-list').style.display='none'; document.getElementById('shared-stats').style.display='none'; document.getElementById('shared-game').style.display='block'; showSharedQuestion();
+}
+
+function showSharedQuestion(){
+  const {questions,index}=state.shared; if(index>=questions.length) return showSharedResult();
+  state.shared.answered=false; const q=questions[index];
+  document.getElementById('shared-q-num').textContent=`${index+1}/${questions.length}`;
+  document.getElementById('shared-q-sentence').innerHTML=highlightSentence(q.sentence,q.highlighted_word);
+  document.getElementById('shared-progress-fill').style.width=(index/questions.length*100)+'%';
+  const opts=document.getElementById('shared-game-options'); opts.innerHTML='';
+  [{label:'定语 (attribute)',value:'attribute'},{label:'表语 (predicative)',value:'predicative'},{label:'It is...to...',value:'itpattern'}].forEach(o=>{const btn=document.createElement('button'); btn.className='game-option'; btn.textContent=o.label; btn.onclick=()=>answerShared(o.value); opts.appendChild(btn);});
+  document.getElementById('shared-fb').style.display='none'; document.getElementById('shared-next').style.display='none';
+}
+function answerShared(uA){
+  if(state.shared.answered) return; state.shared.answered=true;
+  const q=state.shared.questions[state.shared.index]; const correct=q.correct_answer===uA;
+  if(correct) state.shared.correct++; state.shared.total++;
+  const opts=document.getElementById('shared-game-options').children; const al={attribute:0,predicative:1,itpattern:2};
+  for(let i=0;i<opts.length;i++){ opts[i].disabled=true; if(opts[i].textContent.startsWith(getLabelByValue(q.correct_answer).split(' ')[0])) opts[i].classList.add('correct'); }
+  if(!correct) opts[al[uA]].classList.add('wrong');
+  document.getElementById('shared-fb').style.display='block'; document.getElementById('shared-fb').className='feedback-box '+(correct?'correct':'wrong');
+  document.getElementById('shared-fb').innerHTML=correct?'✅ 正确':`❌ 正确答案：${getLabelByValue(q.correct_answer)}`;
+  document.getElementById('shared-next').style.display='block';
+}
+function sharedNext(){ state.shared.index++; showSharedQuestion(); }
+async function showSharedResult(){
+  const {bankId,correct,total}=state.shared; const pct=Math.round(correct/total*100);
+  try{
+    const {data:stat}=await sb.from('shared_bank_stats').select('*').eq('bank_id',bankId).eq('user_id',state.user.id).single();
+    if(stat) await sb.from('shared_bank_stats').update({attempts:stat.attempts+total,correct:stat.correct+correct}).eq('id',stat.id);
+    else await sb.from('shared_bank_stats').insert({bank_id:bankId,user_id:state.user.id,attempts:total,correct});
+  }catch(e){}
+  document.getElementById('shared-game').style.display='none';
+  const resultDiv=document.createElement('div'); resultDiv.className='card score-display'; resultDiv.style.display='block';
+  resultDiv.innerHTML=`<div class="big-score">${pct}%</div><div class="stats">答对${correct}/${total}题</div><button class="btn btn-primary btn-lg" style="margin-top:20px" onclick="navigate('shared')">🤝 返回共享</button>`;
+  document.getElementById('page-shared').querySelector('.container').appendChild(resultDiv);
+}
+
+// ==================== LEADERBOARD ====================
+async function loadLeaderboard(){
+  const {data}=await sb.from('users').select('id,username,points').eq('role','student').order('points',{ascending:false}).limit(20);
+  document.getElementById('leaderboard-list').innerHTML=data.map((s,i)=>`<div class="leaderboard-item"><span class="rank ${i===0?'gold':i===1?'silver':i===2?'bronze':''}">#${i+1}</span><span class="name">${s.username}</span><span class="pts">⭐ ${s.points}</span></div>`).join('')||'<p style="text-align:center;color:var(--text-secondary);padding:40px">暂无数据</p>';
+}
+
+// ==================== SHOP ====================
+const SHOP_ITEMS=[{id:'hat',name:'帽子',items:[{id:1,value:'',name:'无',price:0,emoji:''},{id:2,value:'🎓',name:'学士帽',price:80,emoji:'🎓'},{id:3,value:'👑',name:'皇冠',price:200,emoji:'👑'},{id:4,value:'🧢',name:'棒球帽',price:50,emoji:'🧢'},{id:5,value:'🎩',name:'礼帽',price:100,emoji:'🎩'}]},{id:'top',name:'上衣',items:[{id:6,value:'',name:'默认',price:0,emoji:''},{id:7,value:'👕',name:'T恤',price:40,emoji:'👕'},{id:8,value:'👔',name:'衬衫',price:60,emoji:'👔'},{id:9,value:'🧥',name:'外套',price:120,emoji:'🧥'},{id:10,value:'🎽',name:'运动背心',price:30,emoji:'🎽'}]},{id:'bottom',name:'下装',items:[{id:11,value:'',name:'默认',price:0,emoji:''},{id:12,value:'👖',name:'牛仔裤',price:50,emoji:'👖'},{id:13,value:'🩳',name:'短裤',price:30,emoji:'🩳'}]},{id:'shoes',name:'鞋子',items:[{id:14,value:'',name:'默认',price:0,emoji:''},{id:15,value:'👟',name:'运动鞋',price:50,emoji:'👟'},{id:16,value:'👢',name:'靴子',price:80,emoji:'👢'}]},{id:'accessory',name:'配饰',items:[{id:17,value:'',name:'无',price:0,emoji:''},{id:18,value:'🎒',name:'书包',price:60,emoji:'🎒'},{id:19,value:'👓',name:'眼镜',price:40,emoji:'👓'},{id:20,value:'🧣',name:'围巾',price:35,emoji:'🧣'}]},{id:'theme',name:'UI主题',items:[{id:21,value:'default',name:'默认',price:0,emoji:'🌿'},{id:22,value:'autumn',name:'秋日',price:60,emoji:'🍂'},{id:23,value:'ocean',name:'海洋',price:60,emoji:'🌊'},{id:24,value:'forest',name:'森林',price:60,emoji:'🌲'},{id:25,value:'sunset',name:'日落',price:80,emoji:'🌅'},{id:26,value:'midnight',name:'午夜',price:100,emoji:'🌙'},{id:27,value:'minimal',name:'极简',price:40,emoji:'⬛'}]}];
+
+async function loadShop(){
+  const tabs=document.getElementById('shop-tabs'); tabs.innerHTML=SHOP_ITEMS.map((c,i)=>`<button class="tab-btn ${i===0?'active':''}" onclick="showShopCategory('${c.id}')">${c.name}</button>`).join('');
+  if(SHOP_ITEMS.length>0) showShopCategory(SHOP_ITEMS[0].id);
+  renderAvatar();
+}
+
+function showShopCategory(catId){
+  document.querySelectorAll('#shop-tabs .tab-btn').forEach(b=>b.classList.toggle('active',b.textContent===SHOP_ITEMS.find(c=>c.id===catId)?.name));
+  if(state.shopPreview){ cancelPreview(); }
+  const cat=SHOP_ITEMS.find(c=>c.id===catId); if(!cat) return;
+  document.getElementById('shop-items').innerHTML=cat.items.map(item=>`<div class="shop-item" onclick="previewItem('${catId}',${item.id},'${item.value||''}',${item.price},'${item.name}')"><div class="emoji">${item.emoji||'👤'}</div><div class="item-name">${item.name}</div><div class="item-price">${item.price>0?'⭐ '+item.price:'免费'}</div></div>`).join('');
+}
+function isCurrentlyEquipped(catId,value){
+  if(!state.user) return false;
+  const map={hat:state.user.avatar_hat,top:state.user.avatar_top,bottom:state.user.avatar_bottom,shoes:state.user.avatar_shoes,accessory:state.user.avatar_accessory,theme:state.user.ui_theme};
+  if(catId==='theme') return (map.theme||'default')===value;
+  return map[catId]===value||(value===''&&!map[catId]);
+}
+function previewItem(catId,itemId,itemValue,price,name){
+  state.shopPreview={catId,itemId,itemValue,price,name};
+  document.getElementById('shop-preview-actions').style.display='block';
+  document.getElementById('avatar-preview-title').textContent='预览：'+name;
+  if(catId==='theme') applyTheme(itemValue); else renderAvatar(state.shopPreview);
+}
+async function buyPreviewed(){
+  if(!state.shopPreview) return;
+  const {catId,itemValue,price,name}=state.shopPreview;
+  if(isCurrentlyEquipped(catId,itemValue)){ alert('已装备'); return; }
+  if(price>0&&state.user.points<price){ alert('积分不足'); return; }
+  const fieldMap={hat:'avatar_hat',top:'avatar_top',bottom:'avatar_bottom',shoes:'avatar_shoes',accessory:'avatar_accessory',theme:'ui_theme'};
+  const field=fieldMap[catId];
+  if(field) await sb.from('users').update({[field]:itemValue,points:state.user.points-price}).eq('id',state.user.id);
+  state.user.points-=price; if(field) state.user[field]=itemValue; if(catId==='theme') state.user.ui_theme=itemValue;
+  updateUserUI(); renderAvatar(); cancelPreview(); loadShop(); checkAchievements();
+}
+function cancelPreview(){
+  if(state.shopPreview&&state.shopPreview.catId==='theme') applyTheme(state.user?.ui_theme||'default');
+  state.shopPreview=null; document.getElementById('shop-preview-actions').style.display='none';
+  document.getElementById('avatar-preview-title').textContent='我的形象'; renderAvatar();
+}
+function renderAvatar(preview){
+  const avatar=preview||state.user; if(!avatar) return;
+  const container=document.getElementById('avatar-preview'); if(!container) return;
+  const u=state.user||{};
+  container.innerHTML=`<div class="avatar-hat">${preview?.itemValue||u.avatar_hat||'&nbsp;'}</div><div class="avatar-top">${u.avatar_top||'👤'}</div><div class="avatar-bottom">${u.avatar_bottom||''}</div><div class="avatar-shoes">${u.avatar_shoes||''}</div><div class="avatar-accessory">${u.avatar_accessory||''}</div>`;
+}
+
+// ==================== BATTLE ====================
+async function loadBattles(){ document.getElementById('battle-game').style.display='none'; document.getElementById('battle-result').style.display='none'; document.getElementById('battle-list').style.display='block'; try{ const {data}=await sb.from('challenges').select('*,users!inner(username)').neq('creator_id',state.user.id).order('created_at',{ascending:false}).limit(20); document.getElementById('battle-list').innerHTML=data.map(c=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center"><div><strong>${c.users.username}</strong> 发起挑战 · 得分:${c.creator_score>=0?c.creator_score:'?'}</div><button class="btn btn-primary btn-sm" onclick="acceptBattle(${c.id})">⚔️ 应战</button></div>`).join('')||'<p style="text-align:center;padding:40px">暂无挑战</p>'; } catch(e){} }
+async function createBattle(){
+  const {data}=await sb.from('default_questions').select('*').limit(100);
+  const questions=shuffle(data).slice(0,15);
+  state.battle={questions,index:0,score:0,correct:0,answered:false,challengeId:null};
+  document.getElementById('battle-list').style.display='none'; document.getElementById('battle-game').style.display='block'; document.getElementById('battle-result').style.display='none'; showBattleQuestion();
+}
+function showBattleQuestion(){
+  const {questions,index}=state.battle; if(index>=questions.length) return submitBattleResult();
+  state.battle.answered=false; const q=questions[index];
+  document.getElementById('battle-q-num').textContent=`${index+1}/15`; document.getElementById('battle-q-sentence').innerHTML=highlightSentence(q.sentence,q.highlighted_word); document.getElementById('battle-q-word').textContent=q.highlighted_word;
+  document.getElementById('battle-progress-fill').style.width=(index/15*100)+'%';
+  const opts=document.getElementById('battle-game-options'); opts.innerHTML='';
+  [{label:'定语 (attribute)',value:'attribute'},{label:'表语 (predicative)',value:'predicative'},{label:'It is...to...',value:'itpattern'}].forEach(o=>{const btn=document.createElement('button'); btn.className='game-option'; btn.textContent=o.label; btn.onclick=()=>answerBattle(o.value); opts.appendChild(btn);});
+  document.getElementById('battle-feedback').style.display='none'; document.getElementById('battle-next-btn').style.display='none';
+}
+function answerBattle(uA){
+  if(state.battle.answered) return; state.battle.answered=true;
+  const q=state.battle.questions[state.battle.index]; const correct=q.correct_answer===uA;
+  if(correct){ state.battle.correct++; state.battle.score+=10; } playSound(correct?'correct':'wrong');
+  const opts=document.getElementById('battle-game-options').children; const al={attribute:0,predicative:1,itpattern:2};
+  for(let i=0;i<opts.length;i++){ opts[i].disabled=true; if(opts[i].textContent.startsWith(getLabelByValue(q.correct_answer).split(' ')[0])) opts[i].classList.add('correct'); }
+  if(!correct) opts[al[uA]].classList.add('wrong');
+  document.getElementById('battle-feedback').style.display='block'; document.getElementById('battle-feedback').className='feedback-box '+(correct?'correct':'wrong');
+  document.getElementById('battle-feedback').innerHTML=correct?'✅ 正确':`❌ 正确答案：${getLabelByValue(q.correct_answer)}`; document.getElementById('battle-next-btn').style.display='block';
+}
+function battleNext(){ state.battle.index++; showBattleQuestion(); }
+async function submitBattleResult(){
+  document.getElementById('battle-game').style.display='none'; document.getElementById('battle-result').style.display='block';
+  const {score,correct,questions,challengeId,creatorScore,creatorName}=state.battle;
+  const pct=Math.round(correct/15*100);
+  if(challengeId){
+    document.getElementById('battle-result-content').innerHTML=`<div class="big-score">${pct}%</div><div class="stats">${score}分 · 答对${correct}/15</div><div style="margin-top:16px;padding:12px;background:var(--bg);border-radius:8px"><strong>${creatorName||'对手'}</strong>得分：${creatorScore>=0?creatorScore+'分(':''+(Math.round(creatorScore/150*100))+'%)'}<br>${creatorScore>=0?(score>creatorScore?'🎉 你赢了！':score===creatorScore?'🤝 平局':'😢 继续努力'):''}</div><button class="btn btn-primary" onclick="navigate('battle')" style="margin-top:12px">返回</button>`;
+  } else {
+    await sb.from('challenges').insert({creator_id:state.user.id,creator_score:score,questions_json:JSON.stringify(questions)});
+    document.getElementById('battle-result-content').innerHTML=`<div class="big-score">${pct}%</div><div class="stats">${score}分 · 答对${correct}/15</div><p style="color:var(--success);margin-top:8px">挑战已发布！</p><button class="btn btn-primary" onclick="navigate('battle')">返回</button>`;
+  }
+}
+async function acceptBattle(id){
+  const {data}=await sb.from('challenges').select('*,users!inner(username)').eq('id',id).single();
+  state.battle={questions:JSON.parse(data.questions_json),index:0,score:0,correct:0,answered:false,challengeId:id,creatorScore:data.creator_score,creatorName:data.users.username};
+  document.getElementById('battle-list').style.display='none'; document.getElementById('battle-game').style.display='block'; document.getElementById('battle-result').style.display='none'; showBattleQuestion();
+}
+
+// ==================== CLASSES ====================
+async function loadClasses(){
+  const {data}=await sb.from('classes').select('*,users!inner(username)');
+  document.getElementById('classes-list').innerHTML=data.map(c=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center"><div><strong>${c.name}</strong> · 教师：${c.users.username}</div><div style="display:flex;gap:8px;align-items:center"><button class="btn btn-outline btn-sm" onclick="viewClassMembers(${c.id},'${escapeHtml(c.name)}')">查看成员</button></div></div>`).join('')||'<p style="text-align:center;color:var(--text-secondary);padding:60px">还没有班级</p>';
+  document.getElementById('class-detail').style.display='none';
+}
+function showJoinClass(){ const code=prompt('请输入班级邀请码：'); if(!code) return; sb.from('classes').select('*').eq('invite_code',code).single().then(({data:c})=>{ if(!c){ alert('邀请码无效'); return; } sb.from('class_members').insert({class_id:c.id,user_id:state.user.id}).then(()=>{ alert('成功加入：'+c.name); loadClasses(); }).catch(()=>alert('已加入该班级')); }); }
+async function viewClassMembers(id,name){
+  const {data:members}=await sb.from('class_members').select('*,users!inner(username,points)').eq('class_id',id).order('points',{foreignTable:'users',ascending:false});
+  document.getElementById('classes-list').style.display='none'; document.getElementById('class-detail').style.display='block';
+  document.getElementById('class-detail-title').textContent='🏫 '+name+' · 班级成员';
+  document.getElementById('class-detail-body').innerHTML=members.map((m,i)=>`<div class="leaderboard-item"><span class="rank ${i===0?'gold':i===1?'silver':i===2?'bronze':''}">#${i+1}</span><span class="name">${m.users.username}</span><span class="pts">⭐ ${m.users.points}</span></div>`).join('')||'<p style="text-align:center;padding:20px">暂无成员</p>';
+}
+
+// ==================== TEACHER ====================
+function tSwitchTab(tab){
+  document.querySelectorAll('#page-teacher .tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector('#page-teacher .tab-btn:nth-child('+'tquestions,tstudents,tshared,tclasses'.split(',').indexOf(tab)+')')?.classList?.add('active');
+  ['tpage-tquestions','tpage-tstudents','tpage-tshared','tpage-tclasses'].forEach(id=>{document.getElementById(id).style.display='none'});
+  document.getElementById('page-'+tab).style.display='block';
+  if(tab==='tquestions') tLoadQuestions();
+  if(tab==='tstudents') tLoadStudents();
+  if(tab==='tshared') tLoadSharedBanks();
+  if(tab==='tclasses') tLoadClasses();
+}
+
+async function tLoadQuestions(){
+  const {data}=await sb.from('default_questions').select('*').order('id');
+  document.getElementById('total-qs').textContent=data.length;
+  document.getElementById('tquestions-table').innerHTML=data.map(q=>`<tr><td>${q.id}</td><td>${q.sentence}</td><td>${q.highlighted_word}</td><td>${getLabelByValue(q.correct_answer)}</td><td>${q.difficulty}</td><td><button class="btn btn-outline btn-sm" onclick="tEditQuestion(${q.id},'${escapeHtml(q.sentence)}','${escapeHtml(q.highlighted_word)}','${q.correct_answer}',${q.difficulty},'${escapeHtml(q.wrong_hint||'')}')">编辑</button><button class="btn btn-danger btn-sm" onclick="tDeleteQuestion(${q.id})">删除</button></td></tr>`).join('')||'<tr><td colspan="6" style="text-align:center;padding:20px">暂无题目</td></tr>';
+}
+
+function tShowAddQuestion(){
+  document.getElementById('modal-content').innerHTML=`<span class="close" onclick="closeModal()">✕</span><h3>添加题目</h3><div class="form-group"><label>完整句子</label><input id="eq-sentence"></div><div class="form-group"><label>高亮词</label><input id="eq-word"></div><div class="form-row"><div class="form-group"><label>正确答案</label><select id="eq-answer"><option value="attribute">定语</option><option value="predicative">表语</option><option value="itpattern">It is...to...</option></select></div><div class="form-group"><label>难度</label><select id="eq-diff">${[1,2,3,4,5].map(d=>`<option value="${d}">${d}</option>`).join('')}</select></div></div><div class="form-group"><label>错误提示</label><input id="eq-hint" placeholder="帮助学生理解的提示"></div><button class="btn btn-primary btn-block" onclick="tDoAddQuestion()">添加</button>`;
+  document.getElementById('modal-overlay').classList.add('show');
+}
+
+async function tDoAddQuestion(){ 
+  await sb.from('default_questions').insert({sentence:document.getElementById('eq-sentence').value,highlighted_word:document.getElementById('eq-word').value,correct_answer:document.getElementById('eq-answer').value,difficulty:parseInt(document.getElementById('eq-diff').value),wrong_hint:document.getElementById('eq-hint').value});
+  closeModal(); tLoadQuestions();
+}
+function tEditQuestion(id,s,w,a,d,h){
+  document.getElementById('modal-content').innerHTML=`<span class="close" onclick="closeModal()">✕</span><h3>编辑题目#${id}</h3><div class="form-group"><label>句子</label><input id="eq-sentence" value="${s}"></div><div class="form-group"><label>高亮词</label><input id="eq-word" value="${w}"></div><div class="form-row"><div class="form-group"><label>答案</label><select id="eq-answer">${['attribute','predicative','itpattern'].map(v=>`<option value="${v}" ${a===v?'selected':''}>${getLabelByValue(v)}</option>`).join('')}</select></div><div class="form-group"><label>难度</label><select id="eq-diff">${[1,2,3,4,5].map(x=>`<option value="${x}" ${d===x?'selected':''}>${x}</option>`).join('')}</select></div></div><div class="form-group"><label>提示</label><input id="eq-hint" value="${h}"></div><button class="btn btn-primary btn-block" onclick="tDoEditQuestion(${id})">保存</button>`;
+  document.getElementById('modal-overlay').classList.add('show');
+}
+async function tDoEditQuestion(id){ await sb.from('default_questions').update({sentence:document.getElementById('eq-sentence').value,highlighted_word:document.getElementById('eq-word').value,correct_answer:document.getElementById('eq-answer').value,difficulty:parseInt(document.getElementById('eq-diff').value),wrong_hint:document.getElementById('eq-hint').value}).eq('id',id); closeModal(); tLoadQuestions(); }
+async function tDeleteQuestion(id){ if(!confirm('确定删除题目#'+id+'？')) return; await sb.from('default_questions').delete().eq('id',id); tLoadQuestions(); }
+function closeModal(){ document.getElementById('modal-overlay').classList.remove('show'); }
+
+async function tLoadStudents(){ const {data}=await sb.from('users').select('*').eq('role','student').order('points',{ascending:false}); document.getElementById('tstudents-table').innerHTML=data.map(s=>`<tr><td>${s.username}</td><td><strong style="color:var(--accent)">⭐ ${s.points}</strong></td><td>${new Date(s.created_at).toLocaleString('zh-CN')}</td><td><button class="btn btn-danger btn-sm" onclick="tDeleteStudent(${s.id},'${s.username}')">删除</button></td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;padding:20px">暂无学生</td></tr>'; }
+async function tDeleteStudent(id,n){ if(!confirm('确定删除学生「'+n+'」？所有相关数据将被删除！')) return; await sb.from('wrong_answers').delete().eq('user_id',id); await sb.from('tower_progress').delete().eq('user_id',id); await sb.from('daily_checkins').delete().eq('user_id',id); await sb.from('achievements').delete().eq('user_id',id); await sb.from('class_members').delete().eq('user_id',id); await sb.from('users').delete().eq('id',id); tLoadStudents(); }
+
+async function tLoadSharedBanks(){
+  const {data}=await sb.from('custom_banks').select('*,users!inner(username)').eq('is_shared',1);
+  document.getElementById('tshared-table').innerHTML=data.map(b=>`<tr><td><strong>${b.name}</strong></td><td>${b.users.username}</td><td>...</td><td><span class="badge badge-green">已共享</span><button class="btn btn-danger btn-sm" style="margin-left:8px" onclick="tDeleteSharedBank(${b.id})">删除</button></td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;padding:20px">暂无共享题库</td></tr>';
+}
+async function tDeleteSharedBank(id){ if(!confirm('确定删除？')) return; await sb.from('custom_questions').delete().eq('bank_id',id); await sb.from('shared_bank_stats').delete().eq('bank_id',id); await sb.from('custom_banks').delete().eq('id',id); tLoadSharedBanks(); }
+
+async function tLoadClasses(){
+  const {data}=await sb.from('classes').select('*').eq('teacher_id',state.user.id);
+  document.getElementById('tclasses-table').innerHTML=data.map(c=>`<tr><td><strong>${c.name}</strong></td><td><code style="background:var(--bg);padding:2px 8px;border-radius:4px">${c.invite_code}</code></td><td>0人</td><td><button class="btn btn-outline btn-sm" onclick="navigator.clipboard.writeText('${c.invite_code}')">📋</button><button class="btn btn-danger btn-sm" onclick="tDeleteClass(${c.id})">删除</button></td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;padding:20px">暂无班级</td></tr>';
+}
+function tShowCreateClass(){ const name=prompt('班级名称：'); if(!name) return; const code=Array.from('ABCDEFGHJKLMNPQRSTUVWXYZ23456789').sort(()=>Math.random()-0.5).slice(0,6).join(''); sb.from('classes').insert({teacher_id:state.user.id,name,invite_code:code}).then(()=>{ alert('创建成功！邀请码：'+code); tLoadClasses(); }); }
+async function tDeleteClass(id){ if(!confirm('确定删除？')) return; await sb.from('class_members').delete().eq('class_id',id); await sb.from('classes').delete().eq('id',id); tLoadClasses(); }
+
+async function tExportData(){
+  const {data:users}=await sb.from('users').select('*').eq('role','student');
+  let csv='用户名,积分,注册时间\n'; for(const u of users){ csv+=`${u.username},${u.points},${new Date(u.created_at).toLocaleDateString('zh-CN')}\n`; }
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='学生成绩.csv'; a.click();
+}
+function tShowImportModal(){
+  document.getElementById('modal-content').innerHTML=`<span class="close" onclick="closeModal()">✕</span><h3>批量导入</h3><p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px">每行：句子,高亮词,答案,难度,提示<br>答案填attribute/predicative/itpattern</p><textarea id="import-text" rows="8" placeholder="It is exciting to take a trip.,exciting,itpattern,2,It是形式主语"></textarea><button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="tDoImport()">导入</button>`;
+  document.getElementById('modal-overlay').classList.add('show');
+}
+async function tDoImport(){
+  const lines=document.getElementById('import-text').value.trim().split('\n').filter(l=>l.trim());
+  for(const line of lines){ const p=line.split(','); if(p.length>=3){ await sb.from('default_questions').insert({sentence:p[0].trim(),highlighted_word:p[1].trim(),correct_answer:p[2].trim(),difficulty:parseInt(p[3])||1,wrong_hint:(p[4]||'').trim()}); } }
+  closeModal(); alert('导入完成！'); tLoadQuestions();
+}
+
+// ==================== INIT ====================
+document.getElementById('modal-overlay').addEventListener('click',function(e){ if(e.target===this) closeModal(); });
+init();
+</script>
+</body>
+</html>
