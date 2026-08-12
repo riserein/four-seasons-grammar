@@ -888,9 +888,11 @@ async function acceptBattle(id){
 
 // ==================== CLASSES ====================
 async function loadClasses(){
-  const {data}=await sb.from('classes').select('*');
-  document.getElementById('classes-list').innerHTML=(data||[]).map(c=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center"><div><strong>${c.name}</strong> · 教师ID:${c.teacher_id}</div><div style="display:flex;gap:8px;align-items:center"><button class="btn btn-outline btn-sm" onclick="viewClassMembers(${c.id},'${escapeHtml(c.name)}')">查看成员</button></div></div>`).join('')||'<p style="text-align:center;color:var(--text-secondary);padding:60px">还没有班级</p>';
-  document.getElementById('class-detail').style.display='none';
+  try {
+    const {data}=await sb.from('classes').select('*');
+    document.getElementById('classes-list').innerHTML=(data||[]).map(c=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center"><div><strong>${c.name}</strong></div><div style="display:flex;gap:8px;align-items:center"><button class="btn btn-outline btn-sm" onclick="viewClassMembers(${c.id},'${escapeHtml(c.name)}')">查看成员</button></div></div>`).join('')||'<p style="text-align:center;color:var(--text-secondary);padding:60px">还没有班级，请联系老师创建</p>';
+    document.getElementById('class-detail').style.display='none';
+  } catch(e) { console.error('loadClasses error', e); }
 }
 function showJoinClass(){ const code=prompt('请输入班级邀请码：'); if(!code) return; sb.from('classes').select('*').eq('invite_code',code).single().then(({data:c})=>{ if(!c){ alert('邀请码无效'); return; } sb.from('class_members').insert({class_id:c.id,user_id:state.user.id}).then(()=>{ alert('成功加入：'+c.name); loadClasses(); }).catch(()=>alert('已加入该班级')); }); }
 async function viewClassMembers(id,name){
@@ -945,8 +947,15 @@ async function tLoadSharedBanks(){
 async function tDeleteSharedBank(id){ if(!confirm('确定删除？')) return; await sb.from('custom_questions').delete().eq('bank_id',id); await sb.from('shared_bank_stats').delete().eq('bank_id',id); await sb.from('custom_banks').delete().eq('id',id); tLoadSharedBanks(); }
 
 async function tLoadClasses(){
-  const {data}=await sb.from('classes').select('*').eq('teacher_id',state.user.id);
-  document.getElementById('tclasses-table').innerHTML=data.map(c=>`<tr><td><strong>${c.name}</strong></td><td><code style="background:var(--bg);padding:2px 8px;border-radius:4px">${c.invite_code}</code></td><td>0人</td><td><button class="btn btn-outline btn-sm" onclick="navigator.clipboard.writeText('${c.invite_code}')">📋</button><button class="btn btn-danger btn-sm" onclick="tDeleteClass(${c.id})">删除</button></td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;padding:20px">暂无班级</td></tr>';
+  try {
+    const {data}=await sb.from('classes').select('*').eq('teacher_id',state.user.id);
+    if(!data||data.length===0){ document.getElementById('tclasses-table').innerHTML='<tr><td colspan="4" style="text-align:center;padding:20px">暂无班级</td></tr>'; return; }
+    // 统计每个班级的成员数
+    const classIds=data.map(c=>c.id);
+    const {data:members}=await sb.from('class_members').select('*').in('class_id',classIds);
+    const cnt={}; (members||[]).forEach(m=>{cnt[m.class_id]=(cnt[m.class_id]||0)+1;});
+    document.getElementById('tclasses-table').innerHTML=data.map(c=>`<tr><td><strong>${c.name}</strong></td><td><code style="background:var(--bg);padding:2px 8px;border-radius:4px">${c.invite_code}</code></td><td>${cnt[c.id]||0}人</td><td><button class="btn btn-outline btn-sm" onclick="navigator.clipboard.writeText('${c.invite_code}')">📋</button><button class="btn btn-danger btn-sm" onclick="tDeleteClass(${c.id})">删除</button></td></tr>`).join('');
+  } catch(e) { console.error('tLoadClasses error', e); }
 }
 function tShowCreateClass(){ const name=prompt('班级名称：'); if(!name) return; const code=Array.from('ABCDEFGHJKLMNPQRSTUVWXYZ23456789').sort(()=>Math.random()-0.5).slice(0,6).join(''); sb.from('classes').insert({teacher_id:state.user.id,name,invite_code:code}).then(()=>{ alert('创建成功！邀请码：'+code); tLoadClasses(); }); }
 async function tDeleteClass(id){ if(!confirm('确定删除？')) return; await sb.from('class_members').delete().eq('class_id',id); await sb.from('classes').delete().eq('id',id); tLoadClasses(); }
