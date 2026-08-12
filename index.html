@@ -314,9 +314,13 @@ textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-r
 
 <div class="modal-overlay" id="modal-overlay"><div class="modal" id="modal-content"></div></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script id="supabase-loader" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" onerror="this.src='https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js'"></script>
 <script>
 // ==================== SUPABASE INIT ====================
+if(typeof supabase==='undefined'||!supabase.createClient){
+  document.body.innerHTML='<div style="text-align:center;padding:80px;font-size:18px"><p>⚠️ 网络加载失败</p><p style="color:#666;font-size:14px;margin-top:12px">请检查网络或使用VPN后刷新页面</p></div>';
+  throw new Error('Supabase not loaded');
+}
 const SUPABASE_URL = 'https://mqxvmyxiahhhbmdotdlk.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_v2_DSOU95YW3XKRH0YZbKA_pDRZMfkV';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -372,32 +376,36 @@ function switchAuthTab(tab){ document.getElementById('login-form').style.display
 function showAuthError(msg,isError=true){ const el=document.getElementById('auth-error'); el.textContent=msg; el.style.color=isError?'var(--danger)':'var(--success)'; el.style.background=isError?'#fee2e2':'#dcfce7'; el.style.display='block'; }
 
 async function doLogin(){
-  const username=document.getElementById('login-username').value.trim();
-  const password=document.getElementById('login-password').value.trim();
-  const role=document.getElementById('login-role').value;
-  if(!username||!password){ showAuthError('请填写用户名和密码'); return; }
-  const hash=await sha256(password);
-  const {data}=await sb.from('users').select('*').eq('username',username).eq('password_hash',hash).eq('role',role).single();
-  if(!data){ showAuthError('用户名或密码错误'); return; }
-  setSession({userId:data.id,role:data.role,username:data.username});
-  state.user=data;
-  document.getElementById('page-auth').classList.remove('active');
-  showApp();
+  try {
+    const username=document.getElementById('login-username').value.trim();
+    const password=document.getElementById('login-password').value.trim();
+    const role=document.getElementById('login-role').value;
+    if(!username||!password){ showAuthError('请填写用户名和密码'); return; }
+    const hash=await sha256(password);
+    const {data}=await sb.from('users').select('*').eq('username',username).eq('password_hash',hash).eq('role',role).single();
+    if(!data){ showAuthError('用户名或密码错误'); return; }
+    setSession({userId:data.id,role:data.role,username:data.username});
+    state.user=data;
+    document.getElementById('page-auth').classList.remove('active');
+    showApp();
+  } catch(e) { showAuthError('登录失败：'+e.message); }
 }
 
 async function doRegister(){
-  const username=document.getElementById('reg-username').value.trim();
-  const password=document.getElementById('reg-password').value.trim();
-  const role=document.getElementById('reg-role').value;
-  if(!username||!password){ showAuthError('请填写用户名和密码'); return; }
-  if(password.length<4){ showAuthError('密码至少4位'); return; }
-  const {data:exist}=await sb.from('users').select('id').eq('username',username).single();
-  if(exist){ showAuthError('用户名已存在'); return; }
-  const hash=await sha256(password);
-  const {data}=await sb.from('users').insert({username,password_hash:hash,role}).select('id,username,role,points').single();
-  showAuthError('注册成功！请登录',false);
-  switchAuthTab('login');
-  document.getElementById('login-username').value=username;
+  try {
+    const username=document.getElementById('reg-username').value.trim();
+    const password=document.getElementById('reg-password').value.trim();
+    const role=document.getElementById('reg-role').value;
+    if(!username||!password){ showAuthError('请填写用户名和密码'); return; }
+    if(password.length<4){ showAuthError('密码至少4位'); return; }
+    const {data:exist}=await sb.from('users').select('id').eq('username',username).single();
+    if(exist){ showAuthError('用户名已存在'); return; }
+    const hash=await sha256(password);
+    const {data}=await sb.from('users').insert({username,password_hash:hash,role}).select('id,username,role,points').single();
+    showAuthError('注册成功！请登录',false);
+    switchAuthTab('login');
+    document.getElementById('login-username').value=username;
+  } catch(e) { showAuthError('注册失败：'+e.message); }
 }
 
 async function doLogout(){ localStorage.removeItem('fs_session'); state.user=null; document.getElementById('navbar').style.display='none'; document.querySelectorAll('.page').forEach(p=>p.classList.remove('active')); document.getElementById('page-auth').classList.add('active'); }
