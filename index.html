@@ -702,8 +702,8 @@ function showWrongRedoResult(){
 
 // ==================== BANKS ====================
 async function loadBanks(){
-  const {data:banks}=await sb.from('custom_banks').select('*,users!inner(username)').eq('user_id',state.user.id);
-  document.getElementById('banks-list').innerHTML=banks.map(b=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center"><div><strong>${b.name}</strong></div><div style="display:flex;gap:8px"><button class="btn btn-outline btn-sm" onclick="showBankQuestions(${b.id},'${escapeHtml(b.name)}')">查看题目</button><button class="btn btn-outline btn-sm" onclick="toggleShare(${b.id},${b.is_shared})">${b.is_shared?'取消共享':'分享'}</button><button class="btn btn-danger btn-sm" onclick="deleteBank(${b.id})">删除</button></div></div>`).join('')||'<p style="text-align:center;color:var(--text-secondary);padding:60px">还没有题库，创建一个吧</p>';
+  const {data:banks}=await sb.from('custom_banks').select('*').eq('user_id',state.user.id);
+  document.getElementById('banks-list').innerHTML=(banks||[]).map(b=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center"><div><strong>${b.name}</strong></div><div style="display:flex;gap:8px"><button class="btn btn-outline btn-sm" onclick="showBankQuestions(${b.id},'${escapeHtml(b.name)}')">查看题目</button><button class="btn btn-outline btn-sm" onclick="toggleShare(${b.id},${b.is_shared})">${b.is_shared?'取消共享':'分享'}</button><button class="btn btn-danger btn-sm" onclick="deleteBank(${b.id})">删除</button></div></div>`).join('')||'<p style="text-align:center;color:var(--text-secondary);padding:60px">还没有题库，创建一个吧</p>';
   document.getElementById('bank-detail').style.display='none';
 }
 function showAddBank(){ const name=prompt('题库名称：'); if(!name) return; sb.from('custom_banks').insert({user_id:state.user.id,name}).then(()=>loadBanks()); }
@@ -723,12 +723,12 @@ async function deleteBankQuestion(qid,bid){ await sb.from('custom_questions').de
 
 // ==================== SHARED ====================
 async function loadShared(){
-  const {data:banks}=await sb.from('custom_banks').select('*,users!inner(username)').eq('is_shared',1);
+  const {data:banks}=await sb.from('custom_banks').select('*').eq('is_shared',1);
   const userId=state.user.id;
   document.getElementById('shared-list').style.display='block'; document.getElementById('shared-stats').style.display='none'; document.getElementById('shared-game').style.display='none';
-  document.getElementById('shared-list').innerHTML=banks.map(b=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center"><div><strong>${b.name}</strong> · ${b.users?b.users.username:''}</div><div style="display:flex;gap:8px"><button class="btn btn-outline btn-sm" onclick="viewSharedStats(${b.id})">📊 统计</button>${b.user_id!==userId?`<button class="btn btn-primary btn-sm" onclick="startSharedGame(${b.id})">开始练习</button>`:''}</div></div>`).join('')||'<p style="text-align:center;color:var(--text-secondary);padding:60px">暂无共享题库</p>';
+  document.getElementById('shared-list').innerHTML=(banks||[]).map(b=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center"><div><strong>${b.name}</strong></div><div style="display:flex;gap:8px"><button class="btn btn-outline btn-sm" onclick="viewSharedStats(${b.id})">📊 统计</button>${b.user_id!==userId?`<button class="btn btn-primary btn-sm" onclick="startSharedGame(${b.id})">开始练习</button>`:''}</div></div>`).join('')||'<p style="text-align:center;color:var(--text-secondary);padding:60px">暂无共享题库</p>';
 }
-async function viewSharedStats(bid){ try{ const {data}=await sb.from('shared_bank_stats').select('*,users!inner(username)').eq('bank_id',bid); document.getElementById('shared-list').style.display='none'; document.getElementById('shared-stats').style.display='block'; document.getElementById('shared-stats-title').textContent='📊 准确率排行'; document.getElementById('shared-stats-body').innerHTML=data.map((s,i)=>`<div class="leaderboard-item"><span class="rank ${i===0?'gold':i===1?'silver':i===2?'bronze':''}">#${i+1}</span><span class="name">${s.users.username}</span><span>${s.attempts}次 · ${s.attempts>0?Math.round(s.correct/s.attempts*100):0}%</span></div>`).join('')||'<p style="text-align:center;color:var(--text-secondary);padding:40px">暂无数据</p>'; } catch(e){} }
+async function viewSharedStats(bid){ try{ const {data}=await sb.from('shared_bank_stats').select('*').eq('bank_id',bid); document.getElementById('shared-list').style.display='none'; document.getElementById('shared-stats').style.display='block'; document.getElementById('shared-stats-title').textContent='📊 准确率排行'; document.getElementById('shared-stats-body').innerHTML=(data||[]).map((s,i)=>`<div class="leaderboard-item"><span class="rank ${i===0?'gold':i===1?'silver':i===2?'bronze':''}">#${i+1}</span><span class="name">用户${s.user_id}</span><span>${s.attempts}次 · ${s.attempts>0?Math.round(s.correct/s.attempts*100):0}%</span></div>`).join('')||'<p style="text-align:center;color:var(--text-secondary);padding:40px">暂无数据</p>'; } catch(e){} }
 async function startSharedGame(bid){
   const {data:bank}=await sb.from('custom_banks').select('*').eq('id',bid).single();
   const {data:qs}=await sb.from('custom_questions').select('*').eq('bank_id',bid);
@@ -828,7 +828,7 @@ function renderAvatar(preview){
 }
 
 // ==================== BATTLE ====================
-async function loadBattles(){ document.getElementById('battle-game').style.display='none'; document.getElementById('battle-result').style.display='none'; document.getElementById('battle-list').style.display='block'; try{ const {data}=await sb.from('challenges').select('*,users!inner(username)').neq('creator_id',state.user.id).order('created_at',{ascending:false}).limit(20); document.getElementById('battle-list').innerHTML=data.map(c=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center"><div><strong>${c.users.username}</strong> 发起挑战 · 得分:${c.creator_score>=0?c.creator_score:'?'}</div><button class="btn btn-primary btn-sm" onclick="acceptBattle(${c.id})">⚔️ 应战</button></div>`).join('')||'<p style="text-align:center;padding:40px">暂无挑战</p>'; } catch(e){} }
+async function loadBattles(){ document.getElementById('battle-game').style.display='none'; document.getElementById('battle-result').style.display='none'; document.getElementById('battle-list').style.display='block'; try{ const {data}=await sb.from('challenges').select('*').neq('creator_id',state.user.id).order('created_at',{ascending:false}).limit(20); document.getElementById('battle-list').innerHTML=(data||[]).map(c=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center"><div><strong>用户${c.creator_id}</strong> 发起挑战 · 得分:${c.creator_score>=0?c.creator_score:'?'}</div><button class="btn btn-primary btn-sm" onclick="acceptBattle(${c.id})">⚔️ 应战</button></div>`).join('')||'<p style="text-align:center;padding:40px">暂无挑战</p>'; } catch(e){} }
 async function createBattle(){
   const {data}=await sb.from('default_questions').select('*').limit(100);
   const questions=shuffle(data).slice(0,15);
@@ -867,23 +867,23 @@ async function submitBattleResult(){
   }
 }
 async function acceptBattle(id){
-  const {data}=await sb.from('challenges').select('*,users!inner(username)').eq('id',id).single();
-  state.battle={questions:JSON.parse(data.questions_json),index:0,score:0,correct:0,answered:false,challengeId:id,creatorScore:data.creator_score,creatorName:data.users.username};
+  const {data}=await sb.from('challenges').select('*').eq('id',id).single();
+  state.battle={questions:JSON.parse(data.questions_json),index:0,score:0,correct:0,answered:false,challengeId:id,creatorScore:data.creator_score,creatorName:'用户'+data.creator_id};
   document.getElementById('battle-list').style.display='none'; document.getElementById('battle-game').style.display='block'; document.getElementById('battle-result').style.display='none'; showBattleQuestion();
 }
 
 // ==================== CLASSES ====================
 async function loadClasses(){
-  const {data}=await sb.from('classes').select('*,users!inner(username)');
-  document.getElementById('classes-list').innerHTML=data.map(c=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center"><div><strong>${c.name}</strong> · 教师：${c.users.username}</div><div style="display:flex;gap:8px;align-items:center"><button class="btn btn-outline btn-sm" onclick="viewClassMembers(${c.id},'${escapeHtml(c.name)}')">查看成员</button></div></div>`).join('')||'<p style="text-align:center;color:var(--text-secondary);padding:60px">还没有班级</p>';
+  const {data}=await sb.from('classes').select('*');
+  document.getElementById('classes-list').innerHTML=(data||[]).map(c=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center"><div><strong>${c.name}</strong> · 教师ID:${c.teacher_id}</div><div style="display:flex;gap:8px;align-items:center"><button class="btn btn-outline btn-sm" onclick="viewClassMembers(${c.id},'${escapeHtml(c.name)}')">查看成员</button></div></div>`).join('')||'<p style="text-align:center;color:var(--text-secondary);padding:60px">还没有班级</p>';
   document.getElementById('class-detail').style.display='none';
 }
 function showJoinClass(){ const code=prompt('请输入班级邀请码：'); if(!code) return; sb.from('classes').select('*').eq('invite_code',code).single().then(({data:c})=>{ if(!c){ alert('邀请码无效'); return; } sb.from('class_members').insert({class_id:c.id,user_id:state.user.id}).then(()=>{ alert('成功加入：'+c.name); loadClasses(); }).catch(()=>alert('已加入该班级')); }); }
 async function viewClassMembers(id,name){
-  const {data:members}=await sb.from('class_members').select('*,users!inner(username,points)').eq('class_id',id).order('points',{foreignTable:'users',ascending:false});
+  const {data:members}=await sb.from('class_members').select('*').eq('class_id',id);
   document.getElementById('classes-list').style.display='none'; document.getElementById('class-detail').style.display='block';
   document.getElementById('class-detail-title').textContent='🏫 '+name+' · 班级成员';
-  document.getElementById('class-detail-body').innerHTML=members.map((m,i)=>`<div class="leaderboard-item"><span class="rank ${i===0?'gold':i===1?'silver':i===2?'bronze':''}">#${i+1}</span><span class="name">${m.users.username}</span><span class="pts">⭐ ${m.users.points}</span></div>`).join('')||'<p style="text-align:center;padding:20px">暂无成员</p>';
+  document.getElementById('class-detail-body').innerHTML=(members||[]).map((m,i)=>`<div class="leaderboard-item"><span class="rank ${i===0?'gold':i===1?'silver':i===2?'bronze':''}">#${i+1}</span><span class="name">用户${m.user_id}</span><span class="pts"></span></div>`).join('')||'<p style="text-align:center;padding:20px">暂无成员</p>';
 }
 
 // ==================== TEACHER ====================
@@ -925,8 +925,8 @@ async function tLoadStudents(){ const {data}=await sb.from('users').select('*').
 async function tDeleteStudent(id,n){ if(!confirm('确定删除学生「'+n+'」？所有相关数据将被删除！')) return; await sb.from('wrong_answers').delete().eq('user_id',id); await sb.from('tower_progress').delete().eq('user_id',id); await sb.from('daily_checkins').delete().eq('user_id',id); await sb.from('achievements').delete().eq('user_id',id); await sb.from('class_members').delete().eq('user_id',id); await sb.from('users').delete().eq('id',id); tLoadStudents(); }
 
 async function tLoadSharedBanks(){
-  const {data}=await sb.from('custom_banks').select('*,users!inner(username)').eq('is_shared',1);
-  document.getElementById('tshared-table').innerHTML=data.map(b=>`<tr><td><strong>${b.name}</strong></td><td>${b.users.username}</td><td>...</td><td><span class="badge badge-green">已共享</span><button class="btn btn-danger btn-sm" style="margin-left:8px" onclick="tDeleteSharedBank(${b.id})">删除</button></td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;padding:20px">暂无共享题库</td></tr>';
+  const {data}=await sb.from('custom_banks').select('*').eq('is_shared',1);
+  document.getElementById('tshared-table').innerHTML=(data||[]).map(b=>`<tr><td><strong>${b.name}</strong></td><td>用户${b.user_id}</td><td>...</td><td><span class="badge badge-green">已共享</span><button class="btn btn-danger btn-sm" style="margin-left:8px" onclick="tDeleteSharedBank(${b.id})">删除</button></td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;padding:20px">暂无共享题库</td></tr>';
 }
 async function tDeleteSharedBank(id){ if(!confirm('确定删除？')) return; await sb.from('custom_questions').delete().eq('bank_id',id); await sb.from('shared_bank_stats').delete().eq('bank_id',id); await sb.from('custom_banks').delete().eq('id',id); tLoadSharedBanks(); }
 
