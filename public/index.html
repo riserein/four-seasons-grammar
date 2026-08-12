@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>四季形容词 · 语法大挑战</title>
+<style>
+/* ============ CSS Variables (主题) ============ */
+:root {
+  --primary: #4CAF50;
+  --primary-dark: #388E3C;
+  --primary-light: #C8E6C9;
+  --bg: #f0f4f0;
+  --card-bg: #ffffff;
+  --text: #333;
+  --text-secondary: #666;
+  --border: #e0e0e0;
+  --accent: #FF9800;
+  --danger: #f44336;
+  --success: #4CAF50;
+  --info: #2196F3;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  --radius: 12px;
+  --font: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+body.theme-ocean { --primary: #0288D1; --primary-dark: #01579B; --primary-light: #B3E5FC; --bg: #f0f5fa; }
+body.theme-sunset { --primary: #E65100; --primary-dark: #BF360C; --primary-light: #FFE0B2; --bg: #fef8f2; --accent: #FF6F00; }
+body.theme-lavender { --primary: #7B1FA2; --primary-dark: #4A148C; --primary-light: #E1BEE7; --bg: #f8f4fa; }
+body.theme-mint { --primary: #00897B; --primary-dark: #00695C; --primary-light: #B2DFDB; --bg: #f2faf8; }
+body.theme-dark {
+  --primary: #81C784; --primary-dark: #66BB6A; --primary-light: #2E7D32;
+  --bg: #1a1a2e; --card-bg: #16213e; --text: #e0e0e0;
+  --text-secondary: #aaa; --border: #2a2a4a; --shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  transition: background 0.3s, color 0.3s;
+}
+
+/* ============ 通用组件 ============ */
+.container { max-width: 800px; margin: 0 auto; padding: 20px; }
+.card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  margin-bottom: 16px;
+  transition: background 0.3s;
+}
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 20px; border: none; border-radius: 8px;
+  font-size: 15px; cursor: pointer; font-family: var(--font);
+  transition: all 0.2s; font-weight: 500;
+}
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+.btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+.btn-outline:hover { background: var(--primary-light); }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+.btn-lg { padding: 14px 32px; font-size: 17px; }
+.btn-block { width: 100%; justify-content: center; }
+
+input, select, textarea {
+  width: 100%; padding: 10px 14px; border: 1px solid var(--border);
+  border-radius: 8px; font-size: 14px; font-family: var(--font);
+  background: var(--card-bg); color: var(--text);
+  transition: border 0.2s;
+}
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); }
+label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px; color: var(--text-secondary); }
+.form-group { margin-bottom: 16px; }
+
+.badge {
+  display: inline-block; padding: 3px 10px; border-radius: 12px;
+  font-size: 12px; font-weight: 600;
+}
+.badge-green { background: #C8E6C9; color: #2E7D32; }
+.badge-blue { background: #BBDEFB; color: #1565C0; }
+.badge-orange { background: #FFE0B2; color: #E65100; }
+.badge-red { background: #FFCDD2; color: #C62828; }
+
+/* ============ 导航栏 ============ */
+.navbar {
+  background: var(--card-bg); padding: 0 20px;
+  box-shadow: var(--shadow); position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 56px;
+}
+.navbar .logo { font-size: 20px; font-weight: 700; color: var(--primary); cursor: pointer; }
+.navbar .nav-links { display: flex; gap: 4px; }
+.navbar .nav-links a {
+  padding: 8px 14px; border-radius: 8px; text-decoration: none;
+  color: var(--text-secondary); font-size: 14px; cursor: pointer;
+  transition: all 0.2s;
+}
+.navbar .nav-links a:hover, .navbar .nav-links a.active { background: var(--primary-light); color: var(--primary-dark); }
+.navbar .user-info { display: flex; align-items: center; gap: 12px; font-size: 14px; }
+.navbar .points { color: var(--accent); font-weight: 700; }
+
+/* ============ 页面容器 ============ */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ============ 登录页 ============ */
+.auth-container {
+  max-width: 420px; margin: 80px auto; padding: 20px;
+}
+.auth-tabs { display: flex; gap: 0; margin-bottom: 24px; }
+.auth-tab {
+  flex: 1; padding: 12px; text-align: center; cursor: pointer;
+  border-bottom: 3px solid var(--border); font-weight: 600; font-size: 15px;
+  transition: all 0.2s; color: var(--text-secondary);
+}
+.auth-tab.active { border-bottom-color: var(--primary); color: var(--primary); }
+
+/* ============ 仪表盘 ============ */
+.dashboard-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px; margin-top: 20px;
+}
+.dash-card {
+  background: var(--card-bg); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 24px; cursor: pointer;
+  transition: all 0.2s; text-align: center; border: 2px solid transparent;
+}
+.dash-card:hover { transform: translateY(-3px); border-color: var(--primary); }
+.dash-card .icon { font-size: 36px; margin-bottom: 12px; }
+.dash-card .title { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+.dash-card .desc { font-size: 13px; color: var(--text-secondary); }
+
+/* ============ 滑块 ============ */
+.slider-group { margin-bottom: 20px; }
+.slider-group .slider-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.slider-group .slider-header .label { font-weight: 600; font-size: 14px; }
+.slider-group .slider-header .value { color: var(--primary); font-weight: 700; font-size: 16px; }
+.slider-group input[type="range"] {
+  width: 100%; -webkit-appearance: none; height: 6px;
+  border-radius: 3px; background: var(--primary-light); outline: none;
+}
+.slider-group input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 22px; height: 22px;
+  border-radius: 50%; background: var(--primary); cursor: pointer;
+}
+
+/* ============ 题库选择 ============ */
+.bank-selector { margin-bottom: 20px; }
+.bank-selector h3 { font-size: 15px; margin-bottom: 10px; color: var(--text-secondary); }
+.bank-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-radius: 20px; border: 2px solid var(--border);
+  margin: 4px; cursor: pointer; font-size: 13px; transition: all 0.2s;
+}
+.bank-chip.selected { border-color: var(--primary); background: var(--primary-light); color: var(--primary-dark); }
+.bank-chip .count { font-size: 11px; color: var(--text-secondary); }
+
+/* ============ 游戏区 ============ */
+.game-question {
+  background: var(--card-bg); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 30px; margin-bottom: 20px;
+  text-align: center;
+}
+.game-question .q-num { font-size: 14px; color: var(--text-secondary); margin-bottom: 8px; }
+.game-question .sentence {
+  font-size: 24px; font-weight: 600; margin: 16px 0;
+  line-height: 1.6; color: var(--text);
+}
+.game-question .highlighted {
+  background: linear-gradient(180deg, transparent 60%, var(--accent) 60%);
+  padding: 2px 6px; border-radius: 4px;
+}
+.game-options { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.game-option {
+  padding: 14px 24px; border-radius: 12px; border: 2px solid var(--border);
+  cursor: pointer; font-size: 15px; font-weight: 500; transition: all 0.2s;
+  background: var(--card-bg); min-width: 140px; text-align: center;
+}
+.game-option:hover { border-color: var(--primary); background: var(--primary-light); }
+.game-option.correct { border-color: var(--success); background: #C8E6C9; color: #2E7D32; }
+.game-option.wrong { border-color: var(--danger); background: #FFCDD2; color: #C62828; }
+.game-option:disabled { pointer-events: none; }
+
+.feedback-box {
+  padding: 16px; border-radius: 8px; margin-top: 16px; font-size: 14px; line-height: 1.6;
+}
+.feedback-box.correct { background: #E8F5E9; color: #2E7D32; border-left: 4px solid var(--success); }
+.feedback-box.wrong { background: #FFEBEE; color: #C62828; border-left: 4px solid var(--danger); }
+
+.progress-bar {
+  height: 6px; background: var(--border); border-radius: 3px; margin-bottom: 20px; overflow: hidden;
+}
+.progress-bar .fill {
+  height: 100%; background: var(--primary); border-radius: 3px; transition: width 0.3s;
+}
+
+.score-display {
+  text-align: center; padding: 30px;
+}
+.score-display .big-score { font-size: 64px; font-weight: 800; color: var(--primary); }
+.score-display .stats { font-size: 16px; color: var(--text-secondary); margin: 10px 0; }
+
+/* ============ 错题本 ============ */
+.wrong-item {
+  background: var(--card-bg); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 16px; margin-bottom: 12px;
+  border-left: 4px solid var(--danger);
+}
+.wrong-item .sentence { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+.wrong-item .meta { font-size: 13px; color: var(--text-secondary); display: flex; gap: 16px; flex-wrap: wrap; }
+
+/* ============ 爬塔 ============ */
+.tower-container { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 20px 0; }
+.tower-level {
+  width: 200px; padding: 20px; border-radius: var(--radius); text-align: center;
+  border: 3px solid var(--border); cursor: pointer; transition: all 0.2s;
+  position: relative;
+}
+.tower-level.completed { border-color: var(--success); background: #E8F5E9; }
+.tower-level.current { border-color: var(--primary); background: var(--primary-light); box-shadow: 0 0 20px rgba(76,175,80,0.3); }
+.tower-level.locked { opacity: 0.4; cursor: not-allowed; }
+.tower-level .level-num { font-size: 28px; font-weight: 800; color: var(--primary); }
+.tower-level .level-label { font-size: 13px; color: var(--text-secondary); }
+.tower-level .best-score { font-size: 12px; color: var(--accent); }
+.tower-connector { width: 4px; height: 24px; background: var(--border); border-radius: 2px; }
+
+/* ============ 商城 ============ */
+.shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.shop-item {
+  background: var(--card-bg); border-radius: var(--radius); border: 2px solid var(--border);
+  box-shadow: var(--shadow); padding: 16px; text-align: center; cursor: pointer; transition: all 0.2s;
+}
+.shop-item:hover { border-color: var(--primary); }
+.shop-item.owned { border-color: var(--accent); background: #FFF8E1; }
+.shop-item.equipped { border-color: var(--primary); background: var(--primary-light); font-weight: 700; }
+.shop-item { transition: outline 0.1s; }
+.shop-item .item-icon { font-size: 32px; margin-bottom: 8px; }
+.shop-item .item-name { font-size: 13px; font-weight: 600; }
+.shop-item .item-price { font-size: 13px; color: var(--accent); font-weight: 700; }
+
+.avatar-preview { text-align: center; padding: 30px; }
+.avatar-preview svg { width: 120px; height: 180px; }
+
+/* ============ 排行榜 ============ */
+.leaderboard-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; margin-bottom: 8px; border-radius: 8px;
+  background: var(--bg);
+}
+.leaderboard-item .rank { font-size: 18px; font-weight: 800; width: 32px; text-align: center; }
+.leaderboard-item .rank.gold { color: #FFD700; }
+.leaderboard-item .rank.silver { color: #C0C0C0; }
+.leaderboard-item .rank.bronze { color: #CD7F32; }
+.leaderboard-item .name { flex: 1; font-weight: 500; }
+.leaderboard-item .pts { color: var(--accent); font-weight: 700; }
+
+/* ============ 弹窗 ============ */
+.modal-overlay {
+  display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: var(--card-bg); border-radius: var(--radius); padding: 30px;
+  max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;
+}
+.modal h2 { margin-bottom: 16px; }
+.modal .close { float: right; cursor: pointer; font-size: 20px; color: var(--text-secondary); background: none; border: none; }
+
+/* ============ 标签切换 ============ */
+.tabs { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 20px; }
+.tab-btn {
+  padding: 10px 20px; cursor: pointer; font-size: 14px; font-weight: 500;
+  color: var(--text-secondary); border-bottom: 3px solid transparent;
+  margin-bottom: -2px; transition: all 0.2s; background: none; border-top: none; border-left: none; border-right: none;
+  font-family: var(--font);
+}
+.tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+/* ============ 响应式 ============ */
+@media (max-width: 600px) {
+  .container { padding: 10px; }
+  .game-options { flex-direction: column; }
+  .game-option { min-width: auto; }
+  .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+  .navbar .nav-links a { padding: 6px 10px; font-size: 12px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== 导航栏 ==================== -->
+<nav class="navbar" id="navbar" style="display:none">
+  <div class="logo" onclick="navigate('dashboard')">🍂 四季语法</div>
+  <div class="nav-links">
+    <a onclick="navigate('dashboard')" data-page="dashboard">首页</a>
+    <a onclick="navigate('practice')" data-page="practice">练习</a>
+    <a onclick="navigate('tower')" data-page="tower">爬塔</a>
+    <a onclick="navigate('wrongbook')" data-page="wrongbook">错题本</a>
+    <a onclick="navigate('banks')" data-page="banks">题库</a>
+    <a onclick="navigate('shared')" data-page="shared">共享</a>
+    <a onclick="navigate('shop')" data-page="shop">商城</a>
+    <a onclick="navigate('leaderboard')" data-page="leaderboard">排行</a>
+    <a onclick="navigate('achievements')" data-page="achievements">成就</a>
+    <a onclick="navigate('battle')" data-page="battle">对战</a>
+    <a onclick="navigate('classes')" data-page="classes">班级</a>
+  </div>
+  <div class="user-info">
+    <span id="nav-username"></span>
+    <span class="points">⭐ <span id="nav-points">0</span></span>
+    <button class="btn btn-outline btn-sm" onclick="logout()">退出</button>
+  </div>
+</nav>
+
+<!-- ==================== 登录页 ==================== -->
+<div class="page active" id="page-auth">
+  <div class="auth-container">
+    <div style="text-align:center;margin-bottom:30px">
+      <div style="font-size:48px">🍂</div>
+      <h1 style="color:var(--primary)">四季形容词 · 语法大挑战</h1>
+      <p style="color:var(--text-secondary);margin-top:8px">英语语法AI编程游戏</p>
+    </div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" onclick="switchAuthTab('login')">登录</div>
+      <div class="auth-tab" onclick="switchAuthTab('register')">注册</div>
+    </div>
+    <div id="login-form">
+      <div class="form-group"><label>用户名</label><input id="login-username" placeholder="请输入用户名"></div>
+      <div class="form-group"><label>密码</label><input id="login-password" type="password" placeholder="请输入密码"></div>
+      <div class="form-group"><label>身份</label><select id="login-role"><option value="student">学生</option><option value="teacher">教师</option></select></div>
+      <button class="btn btn-primary btn-block btn-lg" onclick="doLogin()">登录</button>
+    </div>
+    <div id="register-form" style="display:none">
+      <div class="form-group"><label>用户名</label><input id="reg-username" placeholder="请输入用户名"></div>
+      <div class="form-group"><label>密码</label><input id="reg-password" type="password" placeholder="请输入密码（至少4位）"></div>
+      <div class="form-group"><label>身份</label><select id="reg-role"><option value="student">学生</option><option value="teacher">教师</option></select></div>
+      <button class="btn btn-primary btn-block btn-lg" onclick="doRegister()">注册</button>
+    </div>
+    <div id="auth-error" style="color:var(--danger);text-align:center;margin-top:12px;display:none"></div>
+  </div>
+</div>
+
+<!-- ==================== 仪表盘 ==================== -->
+<div class="page" id="page-dashboard">
+  <div class="container">
+    <div class="card" style="text-align:center;padding:30px">
+      <h2>欢迎回来，<span id="dash-name"></span>！</h2>
+      <p style="color:var(--text-secondary);margin-top:8px">准备好了吗？来挑战今天的语法题吧！</p>
+      <div style="margin-top:16px;font-size:24px;color:var(--accent);font-weight:700">⭐ <span id="dash-points">0</span> 积分</div>
+      <div style="margin-top:12px">
+        <span id="checkin-status" style="display:none;margin-right:12px;color:var(--success);font-weight:600">✅ 已签到 · 连续 <span id="checkin-streak">0</span> 天 🔥</span>
+        <button class="btn btn-primary" id="checkin-btn" onclick="doCheckin()">📅 每日签到 +5</button>
+      </div>
+    </div>
+    <div class="dashboard-grid">
+      <div class="dash-card" onclick="navigate('practice')">
+        <div class="icon">📝</div><div class="title">语法练习</div>
+        <div class="desc">自定义难度和题量，刷起来！</div>
+      </div>
+      <div class="dash-card" onclick="navigate('tower')">
+        <div class="icon">🗼</div><div class="title">爬塔闯关</div>
+        <div class="desc">5层塔等你征服，赢积分！</div>
+      </div>
+      <div class="dash-card" onclick="navigate('wrongbook')">
+        <div class="icon">📕</div><div class="title">错题本</div>
+        <div class="desc">温故知新，反复巩固</div>
+      </div>
+      <div class="dash-card" onclick="navigate('banks')">
+        <div class="icon">📚</div><div class="title">我的题库</div>
+        <div class="desc">管理自定义题库</div>
+      </div>
+      <div class="dash-card" onclick="navigate('shared')">
+        <div class="icon">🤝</div><div class="title">共享题库</div>
+        <div class="desc">做同学的题库，PK准确率</div>
+      </div>
+      <div class="dash-card" onclick="navigate('shop')">
+        <div class="icon">🛍️</div><div class="title">积分商城</div>
+        <div class="desc">换装+换主题，积分不白攒</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 练习页 ==================== -->
+<div class="page" id="page-practice">
+  <div class="container">
+    <!-- 练习设置 -->
+    <div class="card" id="practice-setup">
+      <h2 style="margin-bottom:16px">⚙️ 练习设置</h2>
+      <div class="slider-group">
+        <div class="slider-header"><span class="label">难度等级</span><span class="value" id="diff-label">全部</span></div>
+        <input type="range" min="0" max="5" value="0" step="1" id="diff-slider" oninput="updateDiffLabel()">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-secondary)">
+          <span>全部</span><span>Lv.1</span><span>Lv.2</span><span>Lv.3</span><span>Lv.4</span><span>Lv.5</span>
+        </div>
+      </div>
+      <div class="slider-group">
+        <div class="slider-header"><span class="label">题目数量</span><span class="value" id="count-label">10 题</span></div>
+        <input type="range" min="5" max="30" value="10" step="5" id="count-slider" oninput="updateCountLabel()">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-secondary)">
+          <span>5</span><span>10</span><span>15</span><span>20</span><span>25</span><span>30</span>
+        </div>
+      </div>
+
+      <!-- 题库选择 -->
+      <div class="bank-selector">
+        <h3>📋 选择题库（可多选混合）</h3>
+        <div id="bank-chips">
+          <span class="bank-chip selected" data-bank="default" onclick="toggleBank(this, 'default')">
+            📦 默认题库 <span class="count">(32题)</span>
+          </span>
+        </div>
+        <p style="font-size:12px;color:var(--text-secondary);margin-top:8px">
+          不选任何自定义题库 = 只做默认题库；勾选自定义题库 = 混合出题
+        </p>
+      </div>
+      <div class="form-group" style="display:flex;align-items:center;gap:8px">
+        <label style="margin-bottom:0"><input type="checkbox" id="timed-mode" onchange="state.practice.timed=this.checked"> ⏱️ 限时模式（每题10秒，共3分钟）</label>
+      </div>
+
+      <button class="btn btn-primary btn-block btn-lg" onclick="startPractice()">🚀 开始练习</button>
+    </div>
+
+    <!-- 游戏区 -->
+    <div id="game-area" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div class="progress-bar" style="flex:1;margin-right:16px;margin-bottom:0"><div class="fill" id="progress-fill" style="width:0%"></div></div>
+        <div id="timer-display" style="display:none;font-weight:700;color:var(--danger);font-size:18px;min-width:50px;text-align:right">⏱️ 3:00</div>
+      </div>
+      <div class="game-question">
+        <div class="q-num" id="q-num"></div>
+        <div class="sentence" id="q-sentence"></div>
+        <p style="font-size:14px;color:var(--text-secondary);margin-top:8px">
+          高亮词 "<span id="q-word" style="font-weight:700;color:var(--primary)"></span>" 是哪种用法？
+        </p>
+      </div>
+      <div class="game-options" id="game-options"></div>
+      <div class="feedback-box" id="feedback" style="display:none"></div>
+      <button class="btn btn-primary btn-block" id="next-btn" style="display:none;margin-top:16px" onclick="nextQuestion()">下一题 →</button>
+    </div>
+
+    <!-- 结果区 -->
+    <div id="result-area" style="display:none">
+      <div class="card score-display">
+        <div class="big-score" id="final-score"></div>
+        <div class="stats" id="final-stats"></div>
+        <div style="margin-top:20px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+          <button class="btn btn-outline" onclick="retryPractice()">🔄 再来一次</button>
+          <button class="btn btn-primary" onclick="navigate('wrongbook')">📕 查看错题本</button>
+          <button class="btn btn-outline" onclick="navigate('dashboard')">🏠 返回首页</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 爬塔页 ==================== -->
+<div class="page" id="page-tower">
+  <div class="container">
+    <div class="card">
+      <h2 style="text-align:center">🗼 语法爬塔</h2>
+      <p style="text-align:center;color:var(--text-secondary)">5层塔，从简单到困难，每层5题，通关拿积分！</p>
+      <div class="tower-container" id="tower-levels"></div>
+    </div>
+
+    <!-- 爬塔游戏区 -->
+    <div id="tower-game" style="display:none">
+      <div class="progress-bar"><div class="fill" id="tower-progress-fill" style="width:0%"></div></div>
+      <div class="game-question">
+        <div class="q-num" id="tower-q-num"></div>
+        <div class="sentence" id="tower-q-sentence"></div>
+        <p style="font-size:14px;color:var(--text-secondary);margin-top:8px">
+          高亮词 "<span id="tower-q-word" style="font-weight:700;color:var(--primary)"></span>" 是哪种用法？
+        </p>
+      </div>
+      <div class="game-options" id="tower-game-options"></div>
+      <div class="feedback-box" id="tower-feedback" style="display:none"></div>
+      <button class="btn btn-primary btn-block" id="tower-next-btn" style="display:none;margin-top:16px" onclick="towerNextQuestion()">下一题 →</button>
+    </div>
+
+    <!-- 爬塔结果 -->
+    <div id="tower-result" style="display:none">
+      <div class="card score-display" id="tower-result-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 错题本页 ==================== -->
+<div class="page" id="page-wrongbook">
+  <div class="container">
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center">
+      <h2>📕 我的错题本</h2>
+      <div>
+        <button class="btn btn-outline btn-sm" onclick="redoWrongs()" id="redo-wrongs-btn">🔄 重做错题</button>
+        <button class="btn btn-danger btn-sm" onclick="clearWrongs()">🗑️ 清空</button>
+      </div>
+    </div>
+    <div id="wrong-list">
+      <p style="text-align:center;color:var(--text-secondary);padding:40px">加载中...</p>
+    </div>
+    <!-- 重做错题 -->
+    <div id="wrong-redo" style="display:none">
+      <div class="progress-bar"><div class="fill" id="wrong-redo-progress" style="width:0%"></div></div>
+      <div class="game-question">
+        <div class="sentence" id="wrong-redo-sentence"></div>
+        <p style="font-size:14px;color:var(--text-secondary);margin-top:8px">
+          "<span id="wrong-redo-word" style="font-weight:700;color:var(--primary)"></span>" 是哪种用法？
+        </p>
+      </div>
+      <div class="game-options" id="wrong-redo-options"></div>
+      <div class="feedback-box" id="wrong-redo-feedback" style="display:none"></div>
+      <button class="btn btn-primary btn-block" id="wrong-redo-next" style="display:none;margin-top:16px" onclick="wrongRedoNext()">下一题 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 题库管理页 ==================== -->
+<div class="page" id="page-banks">
+  <div class="container">
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center">
+      <h2>📚 我的自定义题库</h2>
+      <button class="btn btn-primary" onclick="showCreateBank()">+ 创建题库</button>
+    </div>
+    <div id="banks-list">
+      <p style="text-align:center;color:var(--text-secondary);padding:40px">加载中...</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 共享题库页 ==================== -->
+<div class="page" id="page-shared">
+  <div class="container">
+    <div class="card">
+      <h2>🤝 共享题库广场</h2>
+      <p style="color:var(--text-secondary)">做同学们的题库，比拼准确率！</p>
+    </div>
+    <div id="shared-list">
+      <p style="text-align:center;color:var(--text-secondary);padding:40px">加载中...</p>
+    </div>
+    <div id="shared-stats" style="display:none">
+      <button class="btn btn-outline btn-sm" onclick="document.getElementById('shared-stats').style.display='none'" style="margin-bottom:12px">← 返回列表</button>
+      <div class="card"><h3 id="shared-stats-title"></h3><div id="shared-stats-body"></div></div>
+    </div>
+    <!-- 做共享题库 -->
+    <div id="shared-game" style="display:none">
+      <div class="progress-bar"><div class="fill" id="shared-progress-fill" style="width:0%"></div></div>
+      <div class="game-question">
+        <div class="q-num" id="shared-q-num"></div>
+        <div class="sentence" id="shared-q-sentence"></div>
+        <p style="font-size:14px;color:var(--text-secondary);margin-top:8px">
+          高亮词 "<span id="shared-q-word" style="font-weight:700;color:var(--primary)"></span>" 是哪种用法？
+        </p>
+      </div>
+      <div class="game-options" id="shared-game-options"></div>
+      <div class="feedback-box" id="shared-feedback" style="display:none"></div>
+      <button class="btn btn-primary btn-block" id="shared-next-btn" style="display:none;margin-top:16px" onclick="sharedNext()">下一题 →</button>
+    </div>
+    <div id="shared-result" style="display:none">
+      <div class="card score-display" id="shared-result-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 商城页 ==================== -->
+<div class="page" id="page-shop">
+  <div class="container">
+    <!-- 小人预览 -->
+    <div class="card avatar-preview" id="avatar-preview-container">
+      <h3 id="avatar-preview-title">我的形象</h3>
+      <div id="avatar-svg"></div>
+    </div>
+    <div id="shop-preview-actions" style="text-align:center;margin-bottom:16px;display:none">
+      <button class="btn btn-primary" onclick="confirmBuy()">✅ 确认购买</button>
+      <button class="btn btn-outline" onclick="cancelPreview()" style="margin-left:8px">↩ 取消预览</button>
+    </div>
+    <div class="tabs" id="shop-tabs"></div>
+    <div class="shop-grid" id="shop-items"></div>
+  </div>
+</div>
+
+<!-- ==================== 排行榜页 ==================== -->
+<div class="page" id="page-leaderboard">
+  <div class="container">
+    <div class="card"><h2 style="text-align:center">🏆 积分排行榜</h2></div>
+    <div class="card" id="leaderboard-list">
+      <p style="text-align:center;color:var(--text-secondary);padding:40px">加载中...</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 成就页 ==================== -->
+<div class="page" id="page-achievements">
+  <div class="container">
+    <div class="card"><h2 style="text-align:center">🏅 成就徽章</h2></div>
+    <div class="dashboard-grid" id="achievements-grid">
+      <p style="text-align:center;color:var(--text-secondary);padding:40px">加载中...</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 对战页 ==================== -->
+<div class="page" id="page-battle">
+  <div class="container">
+    <div class="card">
+      <h2 style="text-align:center">⚔️ 异步对战</h2>
+      <p style="text-align:center;color:var(--text-secondary)">创建一个挑战，和同学们比比谁答题更厉害！</p>
+      <div style="text-align:center;margin-top:16px">
+        <button class="btn btn-primary btn-lg" onclick="createBattle()">🎯 发起新挑战</button>
+      </div>
+    </div>
+    <div id="battle-list">
+      <p style="text-align:center;color:var(--text-secondary);padding:20px">加载中...</p>
+    </div>
+    <!-- 对战游戏区 -->
+    <div id="battle-game" style="display:none">
+      <div class="progress-bar"><div class="fill" id="battle-progress-fill" style="width:0%"></div></div>
+      <div class="game-question">
+        <div class="q-num" id="battle-q-num"></div>
+        <div class="sentence" id="battle-q-sentence"></div>
+        <p style="font-size:14px;color:var(--text-secondary);margin-top:8px">
+          高亮词 "<span id="battle-q-word" style="font-weight:700;color:var(--primary)"></span>" 是哪种用法？
+        </p>
+      </div>
+      <div class="game-options" id="battle-game-options"></div>
+      <div class="feedback-box" id="battle-feedback" style="display:none"></div>
+      <button class="btn btn-primary btn-block" id="battle-next-btn" style="display:none;margin-top:16px" onclick="battleNext()">下一题 →</button>
+    </div>
+    <div id="battle-result" style="display:none">
+      <div class="card score-display" id="battle-result-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 班级页 ==================== -->
+<div class="page" id="page-classes">
+  <div class="container">
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center">
+      <h2>🏫 班级</h2>
+      <button class="btn btn-primary btn-sm" onclick="showJoinClass()">+ 加入班级</button>
+    </div>
+    <div id="classes-list">
+      <p style="text-align:center;color:var(--text-secondary);padding:40px">加载中...</p>
+    </div>
+    <div id="class-detail" style="display:none">
+      <button class="btn btn-outline btn-sm" onclick="document.getElementById('class-detail').style.display='none';loadClasses()" style="margin-bottom:12px">← 返回</button>
+      <div class="card"><h3 id="class-detail-title"></h3><div id="class-detail-body"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 模态弹窗 ==================== -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
