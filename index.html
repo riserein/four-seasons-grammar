@@ -707,7 +707,6 @@ async function loadBanks(){
   const {data:banks}=await sb.from('custom_banks').select('*').eq('user_id',state.user.id);
   document.getElementById('banks-list').innerHTML=(banks||[]).map(b=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center"><div><strong>${b.name}</strong></div><div style="display:flex;gap:8px"><button class="btn btn-outline btn-sm" onclick="showBankQuestions(${b.id},'${escapeHtml(b.name)}')">查看题目</button><button class="btn btn-outline btn-sm" onclick="toggleShare(${b.id},${b.is_shared})">${b.is_shared?'取消共享':'分享'}</button><button class="btn btn-danger btn-sm" onclick="deleteBank(${b.id})">删除</button></div></div>`).join('')||'<p style="text-align:center;color:var(--text-secondary);padding:60px">还没有题库，创建一个吧</p>';
 }
-}
 function showAddBank(){ const name=prompt('题库名称：'); if(!name) return; sb.from('custom_banks').insert({user_id:state.user.id,name}).then(()=>loadBanks()); }
 async function deleteBank(id){ if(!confirm('确定删除？')) return; await sb.from('custom_questions').delete().eq('bank_id',id); await sb.from('custom_banks').delete().eq('id',id).eq('user_id',state.user.id); loadBanks(); }
 async function toggleShare(id,cur){ await sb.from('custom_banks').update({is_shared:cur?0:1}).eq('id',id).eq('user_id',state.user.id); loadBanks(); if(!cur) unlockAchievement('sharer'); checkAchievements(); }
