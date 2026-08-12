@@ -890,7 +890,7 @@ function tSwitchTab(tab){
   document.querySelectorAll('#page-teacher .tab-btn').forEach(b=>b.classList.remove('active'));
   document.querySelector('#page-teacher .tab-btn:nth-child('+'tquestions,tstudents,tshared,tclasses'.split(',').indexOf(tab)+')')?.classList?.add('active');
   ['tpage-tquestions','tpage-tstudents','tpage-tshared','tpage-tclasses'].forEach(id=>{document.getElementById(id).style.display='none'});
-  document.getElementById('page-'+tab).style.display='block';
+  document.getElementById('tpage-'+tab).style.display='block';
   if(tab==='tquestions') tLoadQuestions();
   if(tab==='tstudents') tLoadStudents();
   if(tab==='tshared') tLoadSharedBanks();
