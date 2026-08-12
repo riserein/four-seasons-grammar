@@ -903,10 +903,23 @@ async function loadClasses(){
 }
 function showJoinClass(){ const code=prompt('请输入班级邀请码：'); if(!code) return; sb.from('classes').select('*').eq('invite_code',code).single().then(({data:c})=>{ if(!c){ alert('邀请码无效'); return; } sb.from('class_members').insert({class_id:c.id,user_id:state.user.id}).then(()=>{ alert('成功加入：'+c.name); loadClasses(); }).catch(()=>alert('已加入该班级')); }); }
 async function viewClassMembers(id,name){
-  const {data:members}=await sb.from('class_members').select('*').eq('class_id',id);
-  document.getElementById('classes-list').style.display='none'; document.getElementById('class-detail').style.display='block';
-  document.getElementById('class-detail-title').textContent='🏫 '+name+' · 班级成员';
-  document.getElementById('class-detail-body').innerHTML=(members||[]).map((m,i)=>`<div class="leaderboard-item"><span class="rank ${i===0?'gold':i===1?'silver':i===2?'bronze':''}">#${i+1}</span><span class="name">用户${m.user_id}</span><span class="pts"></span></div>`).join('')||'<p style="text-align:center;padding:20px">暂无成员</p>';
+  try {
+    const {data:members}=await sb.from('class_members').select('*').eq('class_id',id);
+    document.getElementById('classes-list').style.display='none'; document.getElementById('class-detail').style.display='block';
+    document.getElementById('class-detail-title').textContent='🏫 '+name+' · 班级成员';
+    if(!members||members.length===0){
+      document.getElementById('class-detail-body').innerHTML='<p style="text-align:center;padding:20px">暂无成员</p>';
+      return;
+    }
+    // 获取所有成员的真实用户名
+    const userIds=members.map(m=>m.user_id);
+    const {data:users}=await sb.from('users').select('id,username,points').in('id',userIds);
+    const userMap={}; (users||[]).forEach(u=>{userMap[u.id]=u;});
+    document.getElementById('class-detail-body').innerHTML=members.map((m,i)=>{
+      const u=userMap[m.user_id]||{username:'未知',points:0};
+      return `<div class="leaderboard-item"><span class="rank ${i===0?'gold':i===1?'silver':i===2?'bronze':''}">#${i+1}</span><span class="name">${u.username}</span><span class="pts">⭐ ${u.points}</span></div>`;
+    }).join('');
+  } catch(e) { console.error(e); }
 }
 
 // ==================== TEACHER ====================
